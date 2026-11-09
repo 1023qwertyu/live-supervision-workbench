@@ -1,0 +1,4 @@
+.shots/
+server.log
+__pycache__/
+*.pyc

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>状态评分 · 直播监督工作台</title>
+<link rel="stylesheet" href="assets/base.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">监</div>
+      <div><b>直播监督工作台</b><span>LIVE OPS · V1.0</span></div>
+    </div>
+    <a class="nav-item" href="index.html"><span class="dot"></span>总览<span class="tag">00</span></a>
+    <a class="nav-item" href="system.html"><span class="dot"></span>监督体系<span class="tag">01</span></a>
+    <a class="nav-item active" href="scoring.html"><span class="dot"></span>状态评分<span class="tag">02</span></a>
+    <a class="nav-item" href="manual.html"><span class="dot"></span>合规手册<span class="tag">03</span></a>
+    <a class="nav-item" href="check.html"><span class="dot"></span>开播核对卡<span class="tag">04</span></a>
+    <a class="nav-item" href="tuangou.html"><span class="dot"></span>团购版手册<span class="tag">05</span></a>
+    <a class="nav-item" href="live.html"><span class="dot"></span>实时监看<span class="tag">06</span></a>
+    <div class="foot">食品类目电商直播<br>团购券 · 到店核销</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="crumb">模块 02 · 单场评分</span>
+      <div class="spacer"></div>
+      <button class="btn sm" id="btnSample">填入示例</button>
+      <button class="btn sm" id="btnReset">清空</button>
+      <button class="btn primary sm" id="btnSave">保存本场</button>
+    </div>
+
+    <div class="content">
+      <div class="wrap-wide">
+        <div class="page-h">
+          <div class="eyebrow">模块 02 · 单场评分</div>
+          <h2>直播人员状态评分计算器</h2>
+          <p>按《直播人员状态评分与扣分表 v1.1》口径实现在线打分：填本场数据，自动算 CR / VAR、逐项扣分、单场得分与等级，并落到场次台账。口径与 Excel 一致，改规则只需改 <code>assets/scoring.js</code> 顶部的参数表。</p>
+        </div>
+
+        <div class="grid g2" style="grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr); align-items:start;">
+
+          <!-- 输入区 -->
+          <div class="card">
+            <div class="card-h">
+              <h3>一、本场数据</h3>
+              <p>时长单位秒；次数填整数。留空按 0 计。</p>
+            </div>
+            <div class="card-b">
+              <div class="stack">
+                <div class="field">
+                  <label for="room">场次 / 房间</label>
+                  <input id="room" type="text" placeholder="如：煲珠公 · 11-09 晚场">
+                </div>
+                <div class="grid g2" style="gap:14px">
+                  <div class="field">
+                    <label for="liveSec">有效直播时长（秒）</label>
+                    <input id="liveSec" type="number" min="0" step="60" value="7200">
+                    <span class="hint">剔除断流、约定休息、下播后空转</span>
+                  </div>
+                  <div class="field">
+                    <label for="faceSec">有效出镜时长（秒）</label>
+                    <input id="faceSec" type="number" min="0" step="60" value="6480">
+                    <span class="hint">人脸面积≥3% 且偏转角≤45°</span>
+                  </div>
+                  <div class="field">
+                    <label for="voiceSec">本人语音累计（秒）</label>
+                    <input id="voiceSec" type="number" min="0" step="60" value="3960">
+                    <span class="hint">经声纹确认，排除 BGM/素材/助播</span>
+                  </div>
+                  <div class="field">
+                    <label for="awaySec">离岗累计（秒）</label>
+                    <input id="awaySec" type="number" min="0" step="10" value="300">
+                    <span class="hint">人脸与人体同时缺失</span>
+                  </div>
+                  <div class="field">
+                    <label for="phoneCnt">玩手机（次）</label>
+                    <input id="phoneCnt" type="number" min="0" step="1" value="2">
+                    <span class="hint">持机持续≥5 秒计一次</span>
+                  </div>
+                  <div class="field">
+                    <label for="lieCnt">趴桌（次）</label>
+                    <input id="lieCnt" type="number" min="0" step="1" value="0">
+                    <span class="hint">躯干前倾>60° 且持续≥60 秒</span>
+                  </div>
+                  <div class="field">
+                    <label for="silenceMin">静音累计（分钟）</label>
+                    <input id="silenceMin" type="number" min="0" step="1" value="12">
+                    <span class="hint">60 秒窗内语音占比<10% 的累计分钟</span>
+                  </div>
+                  <div class="field">
+                    <label for="eatCnt">进食等无关行为（次）</label>
+                    <input id="eatCnt" type="number" min="0" step="1" value="0">
+                    <span class="hint">进食、整理私人物品等</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="proxy">是否代播 / 播放录播</label>
+                  <select id="proxy">
+                    <option value="0">否</option>
+                    <option value="1">是（直接判 D 并转人工核查）</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 结果区 -->
+          <div class="stack">
+            <div class="result" id="result">
+              <div class="lvl">单场得分</div>
+              <div class="score" id="score">67.5</div>
+              <div class="lv lv-D" id="level">D 级</div>
+              <div class="note" id="note">语音活跃率低于 70%，直接判 D，按未有效讲解处理。</div>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3>二、指标判定</h3></div>
+              <div class="card-b" style="padding-top:10px">
+                <table class="tbl">
+                  <thead><tr><th>指标</th><th class="num">实际</th><th class="num">目标</th><th>判定</th></tr></thead>
+                  <tbody>
+                    <tr><td>出镜率 CR</td><td class="num" id="crVal">90.0%</td><td class="num">90%</td><td id="crBadge"><span class="badge a">达标</span></td></tr>
+                    <tr><td>语音活跃率 VAR</td><td class="num" id="varVal">55.0%</td><td class="num">80%</td><td id="varBadge"><span class="badge d">不达标</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 扣分明细 -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-h">
+            <h3>三、扣分明细</h3>
+            <p>计量值与上限均由规则表推导，不是手填。</p>
+          </div>
+          <div class="card-b" style="padding-top:10px">
+            <table class="tbl" id="deductTable">
+              <thead><tr><th>扣分项</th><th class="num">本场计量</th><th class="num">扣分</th><th class="num">单场上限</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 台账 -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-h" style="display:flex;align-items:center;gap:12px">
+            <div>
+              <h3>四、场次台账</h3>
+              <p>只存在本机浏览器（localStorage），不上传任何地方。</p>
+            </div>
+            <div class="right row">
+              <button class="btn sm" id="btnCsv">导出 CSV</button>
+              <button class="btn sm" id="btnClearLog">清空台账</button>
+            </div>
+          </div>
+          <div class="card-b" style="padding-top:10px">
+            <table class="tbl" id="logTable">
+              <thead><tr><th>时间</th><th>场次</th><th class="num">CR</th><th class="num">VAR</th><th class="num">得分</th><th>等级</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <div class="empty hide" id="logEmpty">还没有记录。填完一场点右上「保存本场」。</div>
+          </div>
+        </div>
+
+        <!-- 规则表 -->
+        <div class="grid g2" style="margin-top:16px">
+          <div class="card">
+            <div class="card-h"><h3>扣分规则参数表</h3><p>与 Excel「扣分规则」页一致。</p></div>
+            <div class="card-b" style="padding-top:10px">
+              <table class="tbl" id="ruleTable">
+                <thead><tr><th>扣分项</th><th class="num">粒度</th><th class="num">单位扣分</th><th class="num">上限</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h3>等级与硬门槛</h3><p>分数只是起点，门槛可以压级。</p></div>
+            <div class="card-b">
+              <table class="tbl">
+                <tbody>
+                  <tr><td>A 级</td><td>≥ 90 分</td></tr>
+                  <tr><td>B 级</td><td>80 – 89 分</td></tr>
+                  <tr><td>C 级</td><td>70 – 79 分</td></tr>
+                  <tr><td>D 级</td><td>&lt; 70 分，连续两场启动管理干预</td></tr>
+                </tbody>
+              </table>
+              <div class="hr"></div>
+              <div class="callout warn" style="font-size:13px">
+                <b>语音活跃率是硬门槛：</b>低于 80% 时单场等级最高只到 C；低于 70% 直接判 D。
+                出镜率低于 50% 同样直接判 D。代播或播放录播不计分，直接判 D 并转人工核查。
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-h"><h3>指标口径</h3><p>评分结果不被认可时，先核对这一节。</p></div>
+          <div class="card-b">
+            <div class="doc" style="font-size:13.6px">
+              <ul>
+                <li><b>有效直播时长</b>：开播至关播总时长，扣除平台故障、断流、约定休息与下播后空转；口径在系统内固化，不按场次手工调整。</li>
+                <li><b>有效出镜时长</b>：同时满足人脸面积 ≥ 画面 3%、头部偏转角 ≤ 45° 的时段；侧身背对镜头或仅露局部不计入。</li>
+                <li><b>语音活跃率</b>：分子仅计声纹确认的主播本人人声，背景音乐、素材原声、助播与连麦一律不计，防止放音规避考核。</li>
+                <li><b>专注率 FR</b>：仅观察不扣分。公开研究中该类识别 F1 只有 0.25–0.48，精度不足以支撑处罚。</li>
+                <li><b>静音超时</b>：60 秒窗口内语音占比 &lt; 10% 的窗口累计，满 5 分钟扣 2 分，与「语音活跃率」是两套口径，不能互相替代。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script src="assets/scoring.js"></script>
+</body>
+</html>

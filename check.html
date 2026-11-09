@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开播核对卡 · 直播监督工作台</title>
+<link rel="stylesheet" href="assets/base.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">监</div>
+      <div><b>直播监督工作台</b><span>LIVE OPS · V1.0</span></div>
+    </div>
+    <a class="nav-item" href="index.html"><span class="dot"></span>总览<span class="tag">00</span></a>
+    <a class="nav-item" href="system.html"><span class="dot"></span>监督体系<span class="tag">01</span></a>
+    <a class="nav-item" href="scoring.html"><span class="dot"></span>状态评分<span class="tag">02</span></a>
+    <a class="nav-item" href="manual.html"><span class="dot"></span>合规手册<span class="tag">03</span></a>
+    <a class="nav-item active" href="check.html"><span class="dot"></span>开播核对卡<span class="tag">04</span></a>
+    <a class="nav-item" href="tuangou.html"><span class="dot"></span>团购版手册<span class="tag">05</span></a>
+    <a class="nav-item" href="live.html"><span class="dot"></span>实时监看<span class="tag">06</span></a>
+    <div class="foot">食品类目电商直播<br>团购券 · 到店核销</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="crumb">模块 04 · 开播前核对</span>
+      <div class="spacer"></div>
+      <span class="badge" id="todayLabel">—</span>
+      <button class="btn sm" id="btnResetCheck">重置今日勾选</button>
+    </div>
+
+    <div class="content">
+      <div class="wrap-wide">
+        <div class="page-h">
+          <div class="eyebrow">模块 04 · 开播前核对</div>
+          <h2>开播前核对卡</h2>
+          <p>把《开播前 30 秒核对卡》和《个人手册》附录五、附录六 的纸质清单搬到这里：勾选即留痕，一屏看完今天到底还差哪几步。勾选状态按日期保存在本机，第二天自动归零。</p>
+        </div>
+
+        <div class="doc-shell">
+          <div id="blocks"></div>
+
+          <aside class="toc-rail" style="border-left:0;padding-left:0">
+            <div class="card" style="position:sticky;top:74px">
+              <div class="card-b">
+                <div class="mini-label" style="font-size:11px;letter-spacing:.14em;color:#6B8199">今日完成度</div>
+                <div class="stat" id="sideStat" style="padding:10px 0 0"></div>
+                <div class="hr"></div>
+                <div class="small" style="line-height:1.75">
+                  <b style="color:#10243A">三条铁律</b><br>
+                  1. 门没关、灯没亮，不开播。<br>
+                  2. 画面里只有白名单，先切走再处理。<br>
+                  3. 关键帧截合成后画面，绿幕原片等于没留证。
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <div class="card-h"><h3>为什么这四条要单独列出来</h3></div>
+          <div class="card-b">
+            <div class="doc" style="font-size:13.6px">
+              <p><b>A 段</b>对应独立直播间绿幕场景——顾客进不来，管理对象就从「谁走进画面」变成「什么东西被放进画面」，所以 30 秒只看三件事：门、白名单、留痕。</p>
+              <p><b>B 段</b>是 A 段的收尾动作，60 秒内完成；这 60 秒挡掉的是当天最常见的三类翻车：妆容、口径、冷场。</p>
+              <p><b>C 段</b>是早班专用。晚班能接上一场状态，早班什么都没有，30 分钟没把信息、货盘、设备、画面拉起来，一整天都在补。</p>
+              <p><b>D 段</b>不是提醒，是停播项。绿幕的八个条件不满足就直接报运营督导，别带着问题开播。</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/check.js"></script>
+</body>
+</html>

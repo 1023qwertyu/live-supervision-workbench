@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="docx-page-size" content="A4">
+<title>电商直播合规手册（直播人员版）</title>
+<style>
+@page { @bottom-center { content: counter(page); } }
+@page cover { @bottom-center { content: none; } }
+section[role="cover"] { page: cover; }
+
+:root {
+  --fs-chapter: var(--typography-fontSize-h1, 17pt);
+  --fs-section: var(--typography-fontSize-h2, 13pt);
+  --fs-body: var(--typography-fontSize-body, 12pt);
+  --fs-table: var(--typography-fontSize-small, 10.5pt);
+  --fs-small: var(--typography-fontSize-tiny, 9.5pt);
+  --fs-cover-title: var(--typography-fontSize-title, 30pt);
+  --fs-cover-sub: var(--typography-fontSize-subtitle, 15pt);
+  --fs-cover-eyebrow: var(--typography-fontSize-coverCategory, 11pt);
+  --ff-heading: "SimHei", "黑体", var(--typography-fontFamily-heading, sans-serif);
+  --ff-body: "SimSun", "宋体", var(--typography-fontFamily-body, serif);
+  --lh-body: var(--typography-lineHeight-body, 1.7);
+  --color-primary: var(--color-primary, #1565C0);
+  --color-heading: var(--color-heading, #1A237E);
+  --color-text: var(--color-text, #212121);
+  --color-muted: var(--color-textSecondary, #616161);
+  --color-border: var(--color-divider, #E0E0E0);
+  --color-surface: var(--color-surface, #F5F7FA);
+  --color-accent: var(--color-accent, #00897B);
+  --spacing-paragraph: var(--spacing-paragraph, 0.7em);
+  --spacing-section: var(--spacing-sectionGap, 1.6em);
+  --page-content-width: var(--layout-maxContentWidth, 16cm);
+  /* 间距令牌 */
+  --sp-0_22em: 0.22em;
+  --sp-0_25em: 0.25em;
+  --sp-0_32em: 0.32em;
+  --sp-0_3em: 0.3em;
+  --sp-0_4em: 0.4em;
+  --sp-0_4em_0_55em: 0.4em 0.55em;
+  --sp-0_55em_0_8em: 0.55em 0.8em;
+  --sp-0_5em: 0.5em;
+  --sp-0_6em: 0.6em;
+  --sp-0_7em: 0.7em;
+  --sp-0_8em: 0.8em;
+  --sp-0_9em: 0.9em;
+  --sp-1_2em: 1.2em;
+  --sp-1_3em: 1.3em;
+  --sp-1_6em: 1.6em;
+  --sp-1_8em: 1.8em;
+  --sp-2em: 2em;
+  --sp-3_5em: 3.5em;
+  --sp-3em: 3em;
+}
+
+* { box-sizing: border-box; }
+body {
+  font-family: var(--ff-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--color-text);
+  max-width: var(--page-content-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 封面 */
+.cover-eyebrow { font-family: var(--ff-heading); font-size: var(--fs-cover-eyebrow); color: var(--color-primary); text-align: center; letter-spacing: 0.18em; margin-top: 4.5cm; margin-bottom: var(--sp-1_6em, 1.6em); font-weight: 700; }
+.cover-title { font-family: var(--ff-heading); font-size: var(--fs-cover-title); font-weight: 700; color: var(--color-heading); text-align: center; margin-bottom: var(--sp-0_6em, 0.6em); letter-spacing: 0.04em; }
+.cover-subtitle { font-family: var(--ff-heading); font-size: var(--fs-cover-sub); color: var(--color-primary); text-align: center; margin-bottom: var(--sp-3em, 3em); }
+.cover-meta { font-family: var(--ff-body); font-size: var(--fs-small); color: var(--color-muted); text-align: center; margin-bottom: var(--sp-0_5em, 0.5em); }
+.cover-org { font-family: var(--ff-heading); font-size: var(--fs-section); color: var(--color-text); text-align: center; margin-top: var(--sp-3_5em, 3.5em); margin-bottom: var(--sp-0_4em, 0.4em); }
+.cover-date { font-family: var(--ff-body); font-size: var(--fs-small); color: var(--color-muted); text-align: center; }
+
+/* 目录 */
+.toc-title { font-family: var(--ff-heading); font-size: var(--fs-section); font-weight: 700; color: var(--color-heading); text-align: center; margin-bottom: var(--sp-1_2em, 1.2em); letter-spacing: 0.2em; }
+.toc-list, .toc-list ol, .toc-list ul { list-style: none; list-style-type: none; padding-left: 0; margin: 0; }
+.toc-list li { text-indent: 0; margin-bottom: var(--sp-0_32em, 0.32em); font-size: var(--fs-table); line-height: 1.5; }
+.toc-list > li { font-family: var(--ff-heading); font-weight: 700; color: var(--color-heading); margin-top: var(--sp-0_5em, 0.5em); }
+.toc-list > li ol { padding-left: var(--sp-1_6em, 1.6em); }
+.toc-list > li ol li { font-family: var(--ff-body); font-weight: 400; color: var(--color-text); }
+.toc-list a { color: var(--color-text); text-decoration: none; }
+
+/* 正文 */
+.chapter { font-family: var(--ff-heading); font-size: var(--fs-chapter); font-weight: 700; color: var(--color-heading); text-align: left; margin-top: var(--sp-1_8em, 1.8em); margin-bottom: var(--sp-0_7em, 0.7em); padding-bottom: var(--sp-0_25em, 0.25em); border-bottom: 2px solid var(--color-primary); }
+.section { font-family: var(--ff-heading); font-size: var(--fs-section); font-weight: 700; color: var(--color-primary); text-align: left; margin-top: var(--sp-1_3em, 1.3em); margin-bottom: var(--sp-0_5em, 0.5em); }
+p { font-family: var(--ff-body); font-size: var(--fs-body); text-indent: 2em; margin-bottom: var(--spacing-paragraph); text-align: justify; }
+p.noindent { text-indent: 0; }
+p.lead { text-indent: 2em; color: var(--color-text); }
+p.note { font-size: var(--fs-small); color: var(--color-muted); text-indent: 0; margin-top: var(--sp-0_3em, 0.3em); }
+p.group-label { font-family: var(--ff-heading); font-size: var(--fs-body); font-weight: 700; color: var(--color-heading); text-indent: 0; margin-top: var(--sp-0_9em, 0.9em); margin-bottom: var(--sp-0_3em, 0.3em); }
+p.tip { border-left: 3px solid var(--color-primary); background: var(--color-surface); padding: var(--sp-0_55em_0_8em, 0.55em 0.8em); text-indent: 0; margin-top: var(--sp-0_8em, 0.8em); margin-bottom: var(--sp-0_9em, 0.9em); }
+p.warn { border-left: 3px solid var(--color-heading); background: var(--color-surface); padding: var(--sp-0_55em_0_8em, 0.55em 0.8em); text-indent: 0; margin-top: var(--sp-0_9em, 0.9em); margin-bottom: var(--sp-0_9em, 0.9em); }
+ol, ul { margin-left: var(--sp-2em, 2em); margin-bottom: var(--spacing-paragraph); }
+li { font-family: var(--ff-body); font-size: var(--fs-body); line-height: var(--lh-body); text-indent: 0; margin-bottom: var(--sp-0_22em, 0.22em); }
+
+/* 表格 */
+table { width: 100%; border-collapse: collapse; margin-top: var(--sp-0_5em, 0.5em); margin-bottom: var(--sp-0_9em, 0.9em); font-size: var(--fs-table); }
+caption { font-family: var(--ff-heading); font-size: var(--fs-table); font-weight: 700; color: var(--color-heading); text-align: left; padding-bottom: var(--sp-0_3em, 0.3em); }
+th { font-family: var(--ff-heading); font-size: var(--fs-table); font-weight: 700; color: var(--color-heading); background: var(--color-surface); border: 1px solid var(--color-border); padding: var(--sp-0_4em_0_55em, 0.4em 0.55em); text-align: left; text-indent: 0; }
+td { font-family: var(--ff-body); font-size: var(--fs-table); color: var(--color-text); border: 1px solid var(--color-border); padding: var(--sp-0_4em_0_55em, 0.4em 0.55em); text-align: left; text-indent: 0; vertical-align: top; }
+td.key { font-family: var(--ff-heading); font-weight: 700; color: var(--color-heading); }
+.endnote { font-family: var(--ff-body); font-size: var(--fs-small); color: var(--color-muted); text-align: center; text-indent: 0; margin-top: var(--sp-2em, 2em); }
+</style>
+</head>
+<body>
+
+<section role="cover">
+  <p class="cover-eyebrow">内部规范 · 直播人员适用</p>
+  <p class="cover-title">电商直播合规手册</p>
+  <p class="cover-subtitle">食品类目 · 抖音电商直播间作业标准</p>
+  <p class="cover-meta">适用对象：主播 / 助播 / 场控 / 中控</p>
+  <p class="cover-meta">文件编号：DS-SC-2026-01　版本：V1.0</p>
+  <p class="cover-org">电商直播事业部</p>
+  <p class="cover-date">2026 年 11 月</p>
+</section>
+
+<section role="cover">
+  <nav class="doc-toc" aria-label="文档目录">
+    <p class="toc-title">目　录</p>
+    <ol class="toc-list">
+      <li><a href="#section-1">第一章 这本手册怎么用</a>
+        <ol>
+          <li><a href="#toc-1">1.1 写给谁</a></li>
+          <li><a href="#toc-2">1.2 为什么要有这本手册</a></li>
+          <li><a href="#toc-3">1.3 按场景查，不用从头读</a></li>
+          <li><a href="#toc-4">1.4 一条总原则</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-2">第二章 你在链条上的位置</a>
+        <ol>
+          <li><a href="#toc-5">2.1 三级汇报关系</a></li>
+          <li><a href="#toc-6">2.2 唯一允许越级的情况</a></li>
+          <li><a href="#toc-7">2.3 你无权自己决定的事</a></li>
+          <li><a href="#toc-8">2.4 一人多岗，不等于可以省步骤</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-3">第三章 开播前：四件事，一件都不能省</a>
+        <ol>
+          <li><a href="#toc-9">3.1 第一件：对口径</a></li>
+          <li><a href="#toc-10">3.2 第二件：验资质</a></li>
+          <li><a href="#toc-11">3.3 第三件：看环境</a></li>
+          <li><a href="#toc-12">3.4 第四件：测设备与链路</a></li>
+          <li><a href="#toc-13">3.5 六种情况，你要拒绝开播</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-4">第四章 出镜：你的形象就是店铺的信用</a>
+        <ol>
+          <li><a href="#toc-14">4.1 着装：三个不要，三个必须</a></li>
+          <li><a href="#toc-15">4.2 手和脸：食品类目的硬要求</a></li>
+          <li><a href="#toc-16">4.3 姿态与情绪</a></li>
+          <li><a href="#toc-17">4.4 语言：五个一改就安全的说法</a></li>
+          <li><a href="#toc-18">4.5 口播广告标识</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-5">第五章 讲商品：先讲清楚，再讲好听</a>
+        <ol>
+          <li><a href="#toc-19">5.1 六步讲解结构</a></li>
+          <li><a href="#toc-20">5.2 食品八大类：顾客最想知道什么</a></li>
+          <li><a href="#toc-21">5.3 三个通用禁区</a></li>
+          <li><a href="#toc-22">5.4 按经营角色排播</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-6">第六章 促销：把优惠讲清楚，而不是讲刺激</a>
+        <ol>
+          <li><a href="#toc-23">6.1 到手价三句话公式</a></li>
+          <li><a href="#toc-24">6.2 限量和限时，说了就得是真的</a></li>
+          <li><a href="#toc-25">6.3 四个不能用的句式</a></li>
+          <li><a href="#toc-26">6.4 赠品与叠加</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-7">第七章 互动：被问住的时候怎么说</a>
+        <ol>
+          <li><a href="#toc-27">7.1 十五秒规则和万能句</a></li>
+          <li><a href="#toc-28">7.2 八类高频问题的标准答法</a></li>
+          <li><a href="#toc-29">7.3 差评与投诉：三步走</a></li>
+          <li><a href="#toc-30">7.4 食品安全投诉：四个动作</a></li>
+          <li><a href="#toc-31">7.5 恶意刷屏与打假人</a></li>
+          <li><a href="#toc-32">7.6 三类不接的话</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-8">第八章 红线：碰一次就停播的事</a>
+        <ol>
+          <li><a href="#toc-33">8.1 红线清单</a></li>
+          <li><a href="#toc-34">8.2 最容易被忽略的三条</a></li>
+          <li><a href="#toc-35">8.3 后果是什么</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-9">第九章 下播不是结束</a>
+        <ol>
+          <li><a href="#toc-36">9.1 三分钟内关播</a></li>
+          <li><a href="#toc-37">9.2 三十分钟内四件事</a></li>
+          <li><a href="#toc-38">9.3 复盘：3 加 1</a></li>
+          <li><a href="#toc-39">9.4 设备与样品</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-10">第十章 违规怎么处理</a>
+        <ol>
+          <li><a href="#toc-40">10.1 四级与对应处理</a></li>
+          <li><a href="#toc-41">10.2 谁认定</a></li>
+          <li><a href="#toc-42">10.3 你有申诉权</a></li>
+          <li><a href="#toc-43">10.4 从重与从轻</a></li>
+          <li><a href="#toc-44">10.5 你能拿到什么</a></li>
+        </ol>
+      </li>
+      <li><a href="#section-11">附录一 高频禁用词对照表</a></li>
+      <li><a href="#section-12">附录二 单场复盘表</a></li>
+      <li><a href="#section-13">附录三 开播前十分钟清单</a></li>
+    </ol>
+  </nav>
+</section>
+
+<section role="body" data-page-restart="1">
+
+<h1 class="chapter" id="section-1">第一章　这本手册怎么用</h1>
+
+<h2 class="section" id="toc-1">1.1 写给谁</h2>
+<p>这本手册的读者不是老板，是坐在镜头前和守在直播位上的那个人。所以它不讲"公司战略""管理闭环"，只讲一件事：你在这个位置上，开播前要做什么、开口时不能说什么、被问住时怎么答、下播后要交什么。</p>
+<p>管理层需要的那套"谁管谁、怎么罚"，只占第二章和第十章，其余章节都是可以在十分钟内照着做的动作。</p>
+
+<h2 class="section" id="toc-2">1.2 为什么要有这本手册</h2>
+<p>直播间的风险，很少来自"不知道有规则"，多数来自"知道有规则，但在那三秒里说错了话"。顾客问"这个吃了能减肥吗"，你顺口说"能"，一句话就够平台判定虚假宣传。</p>
+<p>所以这本手册不追求条文完备，追求三件事：能背下来、能贴在位置上、出事时能立刻查到。</p>
+
+<h2 class="section" id="toc-3">1.3 按场景查，不用从头读</h2>
+<table>
+  <thead>
+    <tr><th style="width:38%">你在做什么</th><th>翻哪一章</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="key">马上要开播</td><td>第三章，加附录三（十分钟清单）</td></tr>
+    <tr><td class="key">讲商品、讲优惠</td><td>第五章、第六章，加附录一（禁用词）</td></tr>
+    <tr><td class="key">被观众问住了</td><td>第七章（应答口径）</td></tr>
+    <tr><td class="key">刚下播</td><td>第九章，加附录二（复盘表）</td></tr>
+    <tr><td class="key">拿不准能不能说</td><td>第八章（红线清单）</td></tr>
+    <tr><td class="key">想知道自己会被怎么考核</td><td>第十章</td></tr>
+  </tbody>
+</table>
+
+<h2 class="section" id="toc-4">1.4 一条总原则</h2>
+<p>你说出去的每一句话，都要能同时通过三个检验：第一，商品详情页上敢不敢原样写；第二，监管部门看到会不会认定这是虚假宣传；第三，顾客收到货之后会不会觉得被骗了。</p>
+<p>三个都过，就讲。有一个过不去，就把这句话咽回去。这条原则比后面所有条款都重要，后面所有条款都只是它的注脚。</p>
+
+<h1 class="chapter" id="section-2">第二章　你在链条上的位置</h1>
+
+<h2 class="section" id="toc-5">2.1 三级汇报关系</h2>
+<p>直播间的事，按下面这条线走，不要跳线。</p>
+<table>
+  <thead>
+    <tr><th style="width:12%">层级</th><th style="width:20%">角色</th><th>你和他怎么配合</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>三级</td><td class="key">主播（你）</td><td>按口径表与排播表作业，向店长汇报</td></tr>
+    <tr><td>二级</td><td class="key">店长</td><td>你的直接上级，管排播、审核口径表、认定一般违规，向运营总监汇报</td></tr>
+    <tr><td>一级</td><td class="key">运营总监</td><td>审批价格、促销、上架、重大违规，向公司负责人汇报</td></tr>
+  </tbody>
+</table>
+<p>日常的排播调整、话术问题、数据复盘、异常上报，一律找店长。不要绕过店长直接对接平台、供应商或对外发声——越线的后果不是挨批评，是"信息出去收不回来"。</p>
+
+<h2 class="section" id="toc-6">2.2 唯一允许越级的情况</h2>
+<p>出现下面四种紧急情形，可以越过店长直接报运营总监，同时抄送店长，事后 24 小时内补一份书面说明：</p>
+<ol>
+  <li>监管人员进场检查，或平台下发了封禁、限流、扣分通知；</li>
+  <li>已经产生传播的舆情、媒体采访、职业打假人交涉；</li>
+  <li>涉及食品安全的批量投诉（异物、变质、身体不适）；</li>
+  <li>价格、库存、发货出现重大错误，且已经产生了真实订单。</li>
+</ol>
+
+<h2 class="section" id="toc-7">2.3 你无权自己决定的事</h2>
+<p>下面这几件事，没有书面确认就一律不做，口头答应也不算数。</p>
+<table>
+  <thead>
+    <tr><th style="width:55%">事项</th><th>谁批</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>直播价、促销机制、赠品</td><td>运营总监</td></tr>
+    <tr><td>新品上架、类目变更</td><td>运营总监</td></tr>
+    <tr><td>赔付与补偿承诺（假一赔十、坏了全退、包换）</td><td>运营总监</td></tr>
+    <tr><td>对外发声（媒体、监管、打假人、平台小二）</td><td>转店长或运营总监</td></tr>
+    <tr><td>临时改价、改库存、下架链接</td><td>店长确认</td></tr>
+    <tr><td>换品、调排播</td><td>店长决定</td></tr>
+  </tbody>
+</table>
+<p class="tip">&nbsp;&nbsp;一句话记住：价格、承诺、对外说话，这三件事没有白纸黑字，一律不讲。</p>
+
+<h2 class="section" id="toc-8">2.4 一人多岗，不等于可以省步骤</h2>
+<p>大多数食品直播间是单人配置，你出镜的同时还要当场控、中控、客服。这本手册里凡是标注"兼岗动作"的，都是指你一个人要同时完成的事——不能因为"没人配合"就省掉。省掉的代价通常不是罚款，是当场翻车。</p>
+
+<h1 class="chapter" id="section-3">第三章　开播前：四件事，一件都不能省</h1>
+
+<h2 class="section" id="toc-9">3.1 第一件：对口径（开播前 60 分钟）</h2>
+<p>口径表是你唯一的说话依据。坐下来，把这十二项逐条对一遍。</p>
+<table>
+  <thead>
+    <tr><th style="width:8%">序号</th><th style="width:38%">要核的项</th><th>常错点</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>商品名称与品牌</td><td>名称和链接标题不一致</td></tr>
+    <tr><td>2</td><td>规格与净含量</td><td>把毛重当净含量讲</td></tr>
+    <tr><td>3</td><td>配料表关键成分</td><td>只记得"有坚果"，忘了还含乳制品</td></tr>
+    <tr><td>4</td><td>保质期与生产日期区间</td><td>说成"能放很久""新鲜得很"</td></tr>
+    <tr><td>5</td><td>储存条件</td><td>该冷藏的说成常温能放</td></tr>
+    <tr><td>6</td><td>产地</td><td>说成大产区，实际是分装地</td></tr>
+    <tr><td>7</td><td>生产许可与执行标准</td><td>没有编号，被问到答不出</td></tr>
+    <tr><td>8</td><td>原价与直播价</td><td>到手价算错，少算优惠券</td></tr>
+    <tr><td>9</td><td>发货仓与发货时效</td><td>承诺"今天发"，实际 48 小时</td></tr>
+    <tr><td>10</td><td>包邮门槛与运费</td><td>偏远地区加价没说</td></tr>
+    <tr><td>11</td><td>限购、赠品、叠加规则</td><td>赠品数量、是否同发说不清</td></tr>
+    <tr><td>12</td><td>退换与售后规则</td><td>把"七天无理由"讲成"随便退"</td></tr>
+  </tbody>
+</table>
+<p class="warn">&nbsp;&nbsp;本书最重要的一条：凡口径表没写的，一律不讲。不确定的时候，你的标准回答只有一句——"这个我确认一下，马上回复您。"这句话不掉粉，说错话才掉粉。</p>
+
+<h2 class="section" id="toc-10">3.2 第二件：验资质（能不能说那个词）</h2>
+<p>有些词不是"讲得好不好"的问题，是"有没有资格说"的问题。凡是要说下面这些词，先确认对应凭证在册。</p>
+<table>
+  <thead>
+    <tr><th style="width:40%">想说的词</th><th>需要的凭证</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>有机、绿色食品</td><td>有效认证证书</td></tr>
+    <tr><td>地理标志、某地原产</td><td>地标授权或产地证明</td></tr>
+    <tr><td>老字号、非遗</td><td>认定文件</td></tr>
+    <tr><td>进口、原装</td><td>报关单、入境货物检验检疫证明</td></tr>
+    <tr><td>获奖、评比第一</td><td>奖项证书原件</td></tr>
+    <tr><td>品牌授权、官方旗舰</td><td>有效期内的品牌授权书</td></tr>
+  </tbody>
+</table>
+<p>没有凭证的处理方式不是"少说两句"，而是"这个词从今天的话术里删掉"。删词只需一秒，被判定冒用资质要解释三个月。</p>
+
+<h2 class="section" id="toc-11">3.3 第三件：看环境（开播前 30 分钟）</h2>
+<p>兼岗动作——没人帮你清场，你自己拿手机扫一圈镜头。以下七类东西不能出现在画面里。</p>
+<table>
+  <thead>
+    <tr><th style="width:8%">序</th><th style="width:42%">不能出现</th><th>为什么</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>杂物堆积、纸箱堵通道、地面污渍水渍</td><td>观感直接掉分，且容易被截图传播</td></tr>
+    <tr><td>2</td><td>破损、挤压变形、外包装污损的商品</td><td>观众会认为你发出去的就是这个品相</td></tr>
+    <tr><td>3</td><td>过期待处理、退货待检、瑕疵待报废的商品</td><td>混在镜头里等于暗示以次充好</td></tr>
+    <tr><td>4</td><td class="key">未遮蔽的快递面单</td><td>一张面单就是一个人的姓名、电话、地址</td></tr>
+    <tr><td>5</td><td>员工私人用品、外卖餐盒、私人手机聊天界面</td><td>泄露内部信息，观感差</td></tr>
+    <tr><td>6</td><td>竞品包装、未授权销售的商品</td><td>涉嫌侵权与违规销售</td></tr>
+    <tr><td>7</td><td>其他人员的正脸（含顾客、同事、路人）</td><td>肖像权问题，须征得同意或虚化</td></tr>
+  </tbody>
+</table>
+<p>第 4 条要单独记牢。快递面单泄露是最常见、也最容易被忽视的个人信息违规。镜头扫过一摞待发包裹，一张面单清楚入画，就已经构成泄露。处理办法很简单：面单朝下放，或者提前撕掉面单联。</p>
+<p>场景本身也有标准：商品陈列整齐、价签与实物对应、背景干净统一。要展示发货环节，只拍打包台和已经封装好的包裹，不拍分拣区地面的散货。</p>
+
+<h2 class="section" id="toc-12">3.4 第四件：测设备与链路（30 到 10 分钟）</h2>
+<p>兼岗动作——这一套是你一个人跑完的。</p>
+<ol>
+  <li><strong>试录 15 秒回放</strong>：听有没有电流声、回声、环境噪音盖过人声。很多人是开播十分钟后才发现麦克风没开。</li>
+  <li><strong>双网络</strong>：主用 Wi-Fi，备用 4G/5G，两个都要通。</li>
+  <li><strong>电量</strong>：手机不低于 80%，或直接插电；备充电宝和备用机。</li>
+  <li><strong>点链接</strong>：逐个点开商品，核对 SKU 是否齐全、库存数对不对、优惠券能不能领、运费模板是否生效、发货仓和时效提示是否与口径一致。</li>
+  <li><strong>走一单</strong>：自己下一单再立刻取消，确认支付链路通。</li>
+</ol>
+<p>没测完不开播。一次链接错误的损失，远大于晚开播半小时。</p>
+
+<h2 class="section" id="toc-13">3.5 六种情况，你要拒绝开播</h2>
+<p>这不是"可以商量"的清单，是"开播就是制造事故"的清单。遇到以下任一情况，先停，报店长。</p>
+<ol>
+  <li>商品或价格口径没确认，前后说法不一致；</li>
+  <li>资质、检测报告、授权文件缺失或已过期；</li>
+  <li>库存不足、有超卖风险，或发货时效根本兑现不了；</li>
+  <li>设备、网络、链接、支付任一环节没测通；</li>
+  <li>临期、瑕疵、退货商品没标注清楚，也没移出镜头；</li>
+  <li>你本人有传染性疾病、发热、咳嗽，或手上有未包扎的伤口——食品类目这条是硬要求。</li>
+</ol>
+
+<h1 class="chapter" id="section-4">第四章　出镜：你的形象就是店铺的信用</h1>
+
+<h2 class="section" id="toc-14">4.1 着装：三个不要，三个必须</h2>
+<ul>
+  <li><strong>不要</strong>拖鞋、短裤、背心、露脐装、过于透薄的衣物。</li>
+  <li><strong>不要</strong>明显褶皱、污渍、破损、有异味的衣服。</li>
+  <li><strong>不要</strong>过于抢眼的图案，让观众记住衣服忘了商品。</li>
+  <li><strong>必须</strong>公司指定服装或品牌工服，干净平整。</li>
+  <li><strong>必须</strong>工牌戴在左胸可视位置。</li>
+  <li><strong>必须</strong>整体配色不超过三种，画面干净。</li>
+</ul>
+
+<h2 class="section" id="toc-15">4.2 手和脸：食品类目的硬要求</h2>
+<p>食品直播和别的类目最大的区别是——观众会默认你在碰他们要吃的东西。</p>
+<ol>
+  <li>头发整洁不遮脸，长发束起；</li>
+  <li>指甲修剪整齐，手持或试吃食品时必须戴一次性手套；</li>
+  <li>不在镜头前整理衣物、抠鼻、抓头、抖腿；</li>
+  <li>患传染性疾病、发热、咳嗽，或手上有未包扎的伤口，当天不上播。</li>
+</ol>
+
+<h2 class="section" id="toc-16">4.3 姿态与情绪</h2>
+<p>坐姿或站姿端正，取景以胸部以上为主。不躺卧、不翘脚、不长时间背对镜头操作手机——观众会以为你在玩手机。全程保持稳定情绪，语速适中。在镜头前表现不耐烦、翻白眼、摔东西、和同事争执，都属于违规。</p>
+
+<h2 class="section" id="toc-17">4.4 语言：五个一改就安全的说法</h2>
+<p>同样的意思，换一种说法就从违规变合规。下面这张表建议背下来。</p>
+<table>
+  <thead>
+    <tr><th style="width:16%">想表达</th><th style="width:34%">不要这么说</th><th>改成这么说</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="key">很好吃</td><td>所有人都说好吃、吃过都说第一</td><td>我个人觉得偏辣；回购的客人反馈分量足</td></tr>
+    <tr><td class="key">分量大</td><td>管饱、超大份、吃到扶墙</td><td>净含量 500 克，约 3 到 4 人份</td></tr>
+    <tr><td class="key">很便宜</td><td>全网最低、史上最便宜</td><td>本场到手价 39 元，比日常价低 10 元</td></tr>
+    <tr><td class="key">很新鲜</td><td>今早现做、绝对新鲜</td><td>本批次生产日期为 11 月 1 日，冷藏保存</td></tr>
+    <tr><td class="key">发得快</td><td>今天下单今天到、保证明天送达</td><td>48 小时内发出，具体时效以物流为准</td></tr>
+  </tbody>
+</table>
+<p>另外两条纪律：只讲口径表内的信息，不即兴发挥、不臆测、不承诺没审批过的服务；每 3 到 5 分钟重复一次关键信息（规格、到手价、发货时效、售后方式）。重复是合规的，也是有效的。</p>
+
+<h2 class="section" id="toc-18">4.5 口播广告标识</h2>
+<p>直播内容构成商业广告的，按平台要求显著标明"广告"。不得用"纯分享""不是广告""我自己买的"这类说法规避标识义务，也不得为没有实际使用过的商品作推荐证明。</p>
+
+<h1 class="chapter" id="section-5">第五章　讲商品：先讲清楚，再讲好听</h1>
+
+<h2 class="section" id="toc-19">5.1 六步讲解结构</h2>
+<p>每个商品都按这个顺序讲，一遍讲完 3 到 5 分钟，然后循环。</p>
+<ol>
+  <li><strong>是什么</strong>——品名、品类、一句话说清它解决什么问题；</li>
+  <li><strong>规格与份量</strong>——净含量、几人份、单包多少克；</li>
+  <li><strong>配料与保质期</strong>——关键配料、有没有过敏原、保质期多久、怎么存；</li>
+  <li><strong>到手价与优惠</strong>——原价、直播价、用什么券、最终到手多少；</li>
+  <li><strong>发货与售后</strong>——从哪发、多久发、破损怎么办、能不能退；</li>
+  <li><strong>注意事项</strong>——储存、食用方式、不适合什么人。</li>
+</ol>
+<p>这个顺序不是形式，是顾客的决策顺序。前三步解决"我要不要"，第四步解决"贵不贵"，第五、六步解决"敢不敢买"。</p>
+
+<h2 class="section" id="toc-20">5.2 食品八大类：顾客最想知道什么</h2>
+<p>不同品类的顾客，心里的问题是完全不同的。讲错重点，讲再多也没人下单。</p>
+<table>
+  <thead>
+    <tr><th style="width:14%">品类</th><th style="width:26%">顾客最想知道的</th><th style="width:30%">你必须讲的</th><th>最容易讲错的</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="key">休闲零食</td><td>好不好吃、一包多少、能不能囤</td><td>净含量、单包克数、保质期、组合装含几袋</td><td>把"无添加"当卖点（无依据时属虚假）</td></tr>
+    <tr><td class="key">粮油调味</td><td>折合每斤多少钱、产地、是不是正品</td><td>净重、产地、执行标准、折合单价</td><td>拿大规格原价对比小规格低价制造价差</td></tr>
+    <tr><td class="key">生鲜冻品</td><td>是不是真的、化了怎么办</td><td>储存条件（-18℃）、保质期、化冻与复热方式</td><td>冻品说成鲜活、拼接肉说成原切</td></tr>
+    <tr><td class="key">冲调饮品</td><td>怎么冲、什么味道、能不能天天喝</td><td>冲泡方法、口感描述、保质期</td><td>说"提神""助眠""减肥"等功效</td></tr>
+    <tr><td class="key">乳品饮料</td><td>保质期到几号、要不要冷藏</td><td>生产日期、剩余保质期、储存条件、限发区域</td><td>临期不标注；说"长高补钙"</td></tr>
+    <tr><td class="key">特产礼盒</td><td>送人拿不拿得出手、里面有什么</td><td>礼盒内容物清单与数量、产地凭证</td><td>冒用地理标志、老字号、非遗名义</td></tr>
+    <tr><td class="key">保健食品</td><td>有什么批准功能、适合谁</td><td>蓝帽子标识、批准文号、批准的功能范围</td><td>超出批准范围宣传，或暗示治病</td></tr>
+    <tr><td class="key">酒类</td><td>什么香型、多少度、能不能送</td><td>酒精度、净含量、资质、未成年人提示</td><td>无酒类资质销售、说"纯粮酿造"无凭证</td></tr>
+  </tbody>
+</table>
+
+<h2 class="section" id="toc-21">5.3 三个通用禁区</h2>
+<p><strong>第一，规格比价陷阱。</strong>讲低价时必须同时讲规格。用小规格的低价去对比大规格的原价，制造"便宜一半"的错觉，属于典型的价格误导。</p>
+<p><strong>第二，功效暗示。</strong>普通食品不得宣称任何治疗、保健功效。不用"减肥"两个字，改用谐音、变体字、行业暗语去暗示，一样判定为虚假宣传。这一条平台查得很细。</p>
+<p><strong>第三，"新鲜"三个字。</strong>现做、新鲜、当天、野生、纯天然、零添加——这些词每一个都需要凭证支撑。没有凭证，就把它们从话术里删掉，换成能验证的事实：生产日期、批次、储存条件。</p>
+
+<h2 class="section" id="toc-22">5.4 按经营角色排播</h2>
+<p>同一个商品库，按"它在直播间承担什么任务"来排，比按品类排更有效。</p>
+<table>
+  <thead>
+    <tr><th style="width:16%">角色</th><th style="width:34%">典型商品</th><th style="width:20%">定价</th><th>任务</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="key">引流款</td><td>零食小包、单瓶饮料</td><td>9.9 到 19.9</td><td>拉停留、拉新</td></tr>
+    <tr><td class="key">复购款</td><td>粮油、乳品、坚果</td><td>稳定价</td><td>撑日常档、养回头客</td></tr>
+    <tr><td class="key">利润款</td><td>礼盒、冻品大礼包</td><td>129 到 399</td><td>扛 GMV 与利润</td></tr>
+    <tr><td class="key">形象款</td><td>地标产品、老字号</td><td>高价低频</td><td>立信任，不宜冲量</td></tr>
+  </tbody>
+</table>
+<p>一场直播的节奏：引流款拉人，复购款承接，利润款冲量，形象款收尾讲故事。整场只讲一类商品，观众的注意力撑不住。</p>
+
+<h1 class="chapter" id="section-6">第六章　促销：把优惠讲清楚，而不是讲刺激</h1>
+
+<h2 class="section" id="toc-23">6.1 到手价三句话公式</h2>
+<p>顾客只关心一件事：我最后付多少。所以每次报价，三句话讲完。</p>
+<ol>
+  <li>"日常价 59 元。"</li>
+  <li>"今天直播间领 10 元券，到手 39 元。"</li>
+  <li>"券在 3 号链接，限本场，售完下架。"</li>
+</ol>
+<p>三句话里包含了原价、优惠方式、限制条件，一个问题都不留给观众猜。含糊的报价一定会在评论区变成追问，追问就会变成纠纷。</p>
+
+<h2 class="section" id="toc-24">6.2 限量和限时，说了就得是真的</h2>
+<ul>
+  <li>说"最后 3 单"，后台就必须真的只剩 3 单；</li>
+  <li>说"限时 10 分钟"，到点就必须下架或改价；</li>
+  <li>说有赠品，就得说清赠品是什么、几份、是否同时发出。</li>
+</ul>
+<p>说完了不做，就是虚假宣传。这一条没有"我只是活跃气氛"的豁免。</p>
+
+<h2 class="section" id="toc-25">6.3 四个不能用的句式</h2>
+<p>下面这几句话，平台已经明确列为违规，属于"一说就被抓"的类型。</p>
+<table>
+  <thead>
+    <tr><th style="width:28%">不能说</th><th style="width:34%">为什么</th><th>换成</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>点关注送运费险</td><td>用虚假利益诱导互动</td><td>需要运费险的可以看商品页说明</td></tr>
+    <tr><td>评论区扣 1 才给你上链接</td><td>用虚假条件绑定互动</td><td>想要的可以看 3 号链接</td></tr>
+    <tr><td>粉丝有优先购买权</td><td>虚构权益</td><td>无，这句话不该存在</td></tr>
+    <tr><td>全网最低价</td><td>绝对化用语加无法验证</td><td>本场到手价 XX 元</td></tr>
+  </tbody>
+</table>
+<p>还有一条容易被忽略的：运费不能远高于商品价格。商品标 9.9 元、运费 30 元，属于价格作弊，平台会按低价引流处理。</p>
+
+<h2 class="section" id="toc-26">6.4 赠品与叠加</h2>
+<ul>
+  <li>赠品要讲品名、数量、是否同发；</li>
+  <li>赠品同样要符合质量要求，"赠品不退不换"不能作为理由；</li>
+  <li>优惠券能否叠加，必须在讲解时说清，不要等顾客下单后才发现不能叠。</li>
+</ul>
+
+<h1 class="chapter" id="section-7">第七章　互动：被问住的时候怎么说</h1>
+
+<h2 class="section" id="toc-27">7.1 十五秒规则和万能句</h2>
+<p>能当场答的，15 秒内回应。答不了的，用这一句顶住："这个我确认一下，马上回复您。"然后 10 分钟内补答，或者引导到店铺客服。</p>
+<p>不要猜、不要编、不要说"大概可以吧"。一次猜测带来的成交，抵不上一次投诉带来的损失。</p>
+
+<h2 class="section" id="toc-28">7.2 八类高频问题的标准答法</h2>
+<table>
+  <thead>
+    <tr><th style="width:18%">顾客问</th><th style="width:42%">你这样答</th><th>绝对不能这样说</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="key">什么时候发货</td><td>48 小时内发出，具体到达以物流为准</td><td>今天下单今天就到</td></tr>
+    <tr><td class="key">能不能便宜点</td><td>这已经是本场到手价，券在 3 号链接</td><td>我给你私下改个价</td></tr>
+    <tr><td class="key">坏了怎么办</td><td>收到有破损，走平台售后，我们按规则处理</td><td>坏了全退，不用寄回</td></tr>
+    <tr><td class="key">是不是临期</td><td>这批生产日期 X 月 X 日，剩余保质期 X 个月</td><td>含糊带过、转移话题</td></tr>
+    <tr><td class="key">有没有添加剂</td><td>配料表在详情页第三张图，我念给您听</td><td>什么都没有，纯天然</td></tr>
+    <tr><td class="key">能开发票吗</td><td>可以，下单后备注抬头，或联系客服开</td><td>直播间都没有发票</td></tr>
+    <tr><td class="key">还有货吗</td><td>后台显示还剩 X 件，售完即下架</td><td>库存无限，随便拍</td></tr>
+    <tr><td class="key">别人家更便宜</td><td>每家的规格和批次不一样，您可以对比净含量</td><td>他们家是假的、是次品</td></tr>
+  </tbody>
+</table>
+
+<h2 class="section" id="toc-29">7.3 差评与投诉：三步走</h2>
+<ol>
+  <li><strong>先安抚情绪</strong>——"给您带来不好的体验，很抱歉。"</li>
+  <li><strong>再记录问题</strong>——订单号、具体事项、顾客诉求。</li>
+  <li><strong>后转交处理</strong>——当天转给店长和售后。</li>
+</ol>
+<p>三个"不"：不在直播间争辩、不怼人、不曝光顾客信息。观众看的是你的反应，不是谁对谁错。</p>
+
+<h2 class="section" id="toc-30">7.4 食品安全投诉：四个动作，十分钟内完成</h2>
+<p>顾客说吃到异物、变质、身体不适，这不是普通售后，按这四步走。</p>
+<ol>
+  <li>立刻停止推介这个商品；</li>
+  <li>当场下架，别等播完；</li>
+  <li>记录订单号与联系方式；</li>
+  <li>10 分钟内转交店长与售后。</li>
+</ol>
+<p class="warn">&nbsp;&nbsp;你不做判断。不要说"这个不可能有异物"，也不要自行承诺赔偿。判断和赔付都不在你的权限内，越权表态会让后面所有处理都失去空间。</p>
+
+<h2 class="section" id="toc-31">7.5 恶意刷屏与打假人</h2>
+<p>恶意刷屏、竞品挑衅：按平台规则隐藏或禁言，直播里不复述、不放大、不带情绪回应。你越解释，他越有素材。</p>
+<p>自称职业打假人、律师、记者、监管人员提问：礼貌回一句"相关问题由公司专人对接"，立即上报，不自行解释、不道歉认责、不承诺赔付。</p>
+
+<h2 class="section" id="toc-32">7.6 三类不接的话</h2>
+<ol>
+  <li><strong>不评价同行</strong>——不点名比较、不编造对比数据、不说"他们家不行"。这既违规，也可能构成商业诋毁。</li>
+  <li><strong>不承诺结果</strong>——不保证好吃、不保证有效、不保证一定满意。改为描述事实：用料、做法、分量、批次。</li>
+  <li><strong>不私下交易</strong>——不加个人微信、不私下转账、不发其他平台链接、不绕开平台下单。这一条不只是违规，是把自己的顾客推到没有任何保障的地方。</li>
+</ol>
+
+<h1 class="chapter" id="section-8">第八章　红线：碰一次就停播的事</h1>
+
+<h2 class="section" id="toc-33">8.1 红线清单</h2>
+<p>下面这些行为，没有"情节轻微"的余地，触犯即按重大违规处理。</p>
+<table>
+  <caption>表 8-1　红线行为清单（共 19 条）</caption>
+  <thead>
+    <tr><th style="width:8%">序号</th><th style="width:20%">类别</th><th>禁止行为</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td class="key">A 内容造假</td><td>虚构功效，宣称治病、降三高、增强免疫、调理身体</td></tr>
+    <tr><td>2</td><td class="key">A 内容造假</td><td>使用"国家级""最高级""最佳""第一""全网最低""史上最便宜"等绝对化用语</td></tr>
+    <tr><td>3</td><td class="key">A 内容造假</td><td>虚构产地、等级、工艺（冻品称鲜活、拼接称原切、国产称进口、代工称自有工厂）</td></tr>
+    <tr><td>4</td><td class="key">A 内容造假</td><td>伪造资质、检测报告、认证标志、奖项，冒用老字号、非遗、地理标志名义</td></tr>
+    <tr><td>5</td><td class="key">A 内容造假</td><td>隐瞒临期、瑕疵、破损、退货翻新商品的真实状态</td></tr>
+    <tr><td>6</td><td class="key">A 内容造假</td><td>隐瞒过敏原、配料表关键成分、储存条件，销售过期或感官异常食品</td></tr>
+    <tr><td>7</td><td class="key">B 价格作弊</td><td>虚构原价、先涨后降、虚假优惠</td></tr>
+    <tr><td>8</td><td class="key">B 价格作弊</td><td>编造"最后 X 单"却不限量，用虚假倒计时制造紧迫</td></tr>
+    <tr><td>9</td><td class="key">B 价格作弊</td><td>承诺未经审批的赔付、补偿、独家、包退包换条件</td></tr>
+    <tr><td>10</td><td class="key">C 履约与竞争</td><td>虚构发货时效、虚假发货、承诺无法兑现的到达时间</td></tr>
+    <tr><td>11</td><td class="key">C 履约与竞争</td><td>贬低、诋毁同行或其他品牌，编造对比数据</td></tr>
+    <tr><td>12</td><td class="key">D 交易与数据</td><td>引导私下交易、绕开平台收款、向顾客发送其他平台链接</td></tr>
+    <tr><td>13</td><td class="key">D 交易与数据</td><td>诱导好评返现、要求删差评、雇人刷评刷单、伪造销量与评价</td></tr>
+    <tr><td>14</td><td class="key">D 交易与数据</td><td>拍摄、念读或展示顾客订单信息、快递面单、聊天记录</td></tr>
+    <tr><td>15</td><td class="key">D 交易与数据</td><td>擅自更改已审批的价格、规格、赠品、库存，或私自下架在售链接</td></tr>
+    <tr><td>16</td><td class="key">D 交易与数据</td><td>销售非公司授权渠道的商品，或私自带走、试用、处置样品与库存</td></tr>
+    <tr><td>17</td><td class="key">E 内容秩序</td><td>与观众对骂，发表地域、性别、宗教歧视言论，低俗擦边或涉政涉黄涉暴内容</td></tr>
+    <tr><td>18</td><td class="key">E 内容秩序</td><td>直播中饮酒、吸烟、暴食浪费、危险动作（明火、刀具炫技）</td></tr>
+    <tr><td>19</td><td class="key">E 内容秩序</td><td>明知商品存在安全问题仍继续推介、未按规定下架</td></tr>
+  </tbody>
+</table>
+
+<h2 class="section" id="toc-34">8.2 最容易被忽略的三条</h2>
+<p>不是那种"一看就知道不能干"的事，而是干了还以为没事的事。</p>
+<ol>
+  <li><strong>面单入画（第 14 条）</strong>——镜头扫过一摞包裹就构成泄露，很多人根本没意识到。</li>
+  <li><strong>功效暗示（第 1 条）</strong>——不用"减肥"两个字，用谐音、暗语、变体字暗示，同样判定。</li>
+  <li><strong>虚假时效（第 10 条）</strong>——为了催单说一句"今天下单今天到"，是虚假承诺，不是"话术技巧"。</li>
+</ol>
+
+<h2 class="section" id="toc-35">8.3 后果是什么</h2>
+<p>平台上，是四连击：商品下架或封禁，扣违约金，冻结货款，店铺清退。虚假宣传情节严重的，一次就是封禁加扣 500 元违约金，并冻结该商品近 30 天货款 30 天；特别严重的直接清退，扣 6000 元，冻结 90 天。</p>
+<p>公司内，是四级处理：从口头提醒一直到解除劳动合同并追偿损失，详见第十章。</p>
+<p>但最直接的影响是：你的体验分会掉。体验分一掉，流量就掉，流量掉了，你讲得再好也没人听。这才是违规真正的代价。</p>
+
+<h1 class="chapter" id="section-9">第九章　下播不是结束</h1>
+
+<h2 class="section" id="toc-36">9.1 三分钟内关播</h2>
+<p>到点下播，不擅自延长，也不提前结束。下播后三分钟内必须关闭直播，不要挂空播——空播既浪费流量权重，也容易出意外画面。</p>
+
+<h2 class="section" id="toc-37">9.2 三十分钟内四件事</h2>
+<p>兼岗动作——这四件事都是你自己做完的。</p>
+<ol>
+  <li><strong>留证</strong>：保存本场直播回放、脚本、商品链接与价格截图、库存快照。保存期不少于 3 年，这是法律要求，不是公司要求。出事时这是你唯一能自证的东西。</li>
+  <li><strong>填表</strong>：填写单场复盘表（附录二）。</li>
+  <li><strong>报异常</strong>：当场发生的链接错误、错价、超卖、断流、投诉，写清时间点与处理结果，报店长。</li>
+  <li><strong>归档</strong>：图片、短视频、话术迭代记录统一存到指定云盘，命名规则"日期_账号_场次"。</li>
+</ol>
+
+<h2 class="section" id="toc-38">9.3 复盘：3 加 1</h2>
+<p>下播当天，和店长过一遍：三个做得好的，一个必须改的。不要列十个问题，列了也改不完。</p>
+<p>真正要看的指标只有四个：平均停留时长、支付转化率、退款率与差评率、违规提醒次数。前两个决定你有没有把人留住，后两个决定你能留多久。</p>
+
+<h2 class="section" id="toc-39">9.4 设备与样品</h2>
+<ol>
+  <li><strong>清单交接</strong>：开播前、收播后各点一次设备数，签字。</li>
+  <li><strong>收播归位</strong>：断电、收纳进指定柜位上锁；支架灯具不占通道；直播手机删掉私人内容和无关应用。</li>
+  <li><strong>故障当日报修</strong>，不带故障开播。</li>
+  <li><strong>样品登记</strong>：领用、试吃、消耗都要记录；展示样品不与在售库存混放；未经店长审批不得带走、私用、赠送。</li>
+  <li><strong>账号安全</strong>：直播账号、店铺后台、改价权限不外传，不在个人设备长期登录；离岗或离职当天移交并改密。</li>
+</ol>
+
+<h1 class="chapter" id="section-10">第十章　违规怎么处理（你应该知道的）</h1>
+
+<h2 class="section" id="toc-40">10.1 四级与对应处理</h2>
+<table>
+  <thead>
+    <tr><th style="width:16%">级别</th><th style="width:46%">典型情形</th><th>处理</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="key">一级<br>轻微</td><td>着装不规范、迟到 5 分钟内、忘带工牌、话术漏关键信息、评论区漏答</td><td>当场纠正加口头提醒；当月累计 3 次计一次书面警告</td></tr>
+    <tr><td class="key">二级<br>一般</td><td>迟到 5 到 30 分钟、擅自改话术、未按口径表讲解、开播前测试漏项、未填复盘表、样品未登记</td><td>书面警告，扣发当次直播提成 20% 到 50%</td></tr>
+    <tr><td class="key">三级<br>较重</td><td>绝对化用语经提醒仍不改、承诺未确认的服务、与观众争执、未戴手套操作食品、镜头出现面单或杂物</td><td>停播 3 到 7 天，扣发当月绩效 20% 到 50%，重新考核</td></tr>
+    <tr><td class="key">四级<br>重大</td><td>触犯第八章任一红线、引发平台处罚或舆情、隐瞒食品安全问题、刷单造假、私下收款</td><td>立即停播，解除劳动合同或合作协议，追偿损失；涉嫌违法移交司法机关</td></tr>
+  </tbody>
+</table>
+
+<h2 class="section" id="toc-41">10.2 谁认定</h2>
+<p>一级、二级由店长认定，报运营总监备案；三级由店长提议、运营总监认定；四级由运营总监提议、报公司负责人认定。不是谁在群里说一句就算。</p>
+
+<h2 class="section" id="toc-42">10.3 你有申诉权</h2>
+<p>收到处理通知后，24 小时内可以书面向上一级申诉——对店长认定不服的，向运营总监申诉——3 个工作日内答复。</p>
+<p>申诉期间处理不停止执行，但认定确有错误的，会撤销并补发。所以发现问题的第一反应不该是"算了"，而是"留证据、写清楚"。</p>
+
+<h2 class="section" id="toc-43">10.4 从重与从轻</h2>
+<ul>
+  <li><strong>从重</strong>：同一问题重复发生、事后隐瞒或删证据、拉别人顶替、已经造成投诉或处罚。</li>
+  <li><strong>从轻</strong>：主动上报并当场纠正、没有造成实际影响、首次发生且态度端正。</li>
+</ul>
+<p class="tip">&nbsp;&nbsp;"主动上报"几乎永远比"瞒着"划算。这条建议在任何一个行业都成立。</p>
+
+<h2 class="section" id="toc-44">10.5 你能拿到什么</h2>
+<table>
+  <thead>
+    <tr><th style="width:18%">奖项</th><th style="width:44%">条件</th><th>谁批</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="key">合规标兵</td><td>单月零违规、零投诉、抽查全过</td><td>店长提议，运营总监批</td></tr>
+    <tr><td class="key">转化之星</td><td>单月 GMV 达目标 120% 以上</td><td>运营总监批</td></tr>
+    <tr><td class="key">履约之星</td><td>发货超时率、退款率低于阈值</td><td>店长认定，运营总监批</td></tr>
+    <tr><td class="key">口碑奖</td><td>差评率低于阈值，收到点名好评</td><td>店长认定，运营总监批</td></tr>
+    <tr><td class="key">应急奖</td><td>妥善处置断流、错价、投诉，避免损失</td><td>店长提议，运营总监批</td></tr>
+    <tr><td class="key">创意奖</td><td>合规话术或脚本被采纳并全店推广</td><td>运营总监批</td></tr>
+  </tbody>
+</table>
+<p>具体金额与比例按门店薪酬制度执行。奖励和扣罚分开核算，不互相抵扣。</p>
+
+<h1 class="chapter" id="section-11">附录一　高频禁用词对照表</h1>
+<p>建议单独打印一张，贴在直播位伸手能碰到的地方。</p>
+<table>
+  <thead>
+    <tr><th style="width:14%">类别</th><th style="width:40%">不要说的词</th><th>换成</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="key">绝对化</td><td>最好吃、第一、顶级、国家级、全网最低、史上最便宜</td><td>本店招牌、销量靠前、本场到手价 X 元</td></tr>
+    <tr><td class="key">功效</td><td>养生、降火、补气血、增强免疫、治疗、调理</td><td>口味清爽、用料实在、配料表干净</td></tr>
+    <tr><td class="key">无依据</td><td>纯天然、零添加、有机、野生、进口（无凭证）</td><td>配料表可查、原料可溯源、国产正品</td></tr>
+    <tr><td class="key">无标准</td><td>管饱、超大份、吃到扶墙、绝对够吃</td><td>净含量 X 克 / X 袋</td></tr>
+    <tr><td class="key">虚假紧迫</td><td>最后 3 单（不限量）、倒计时（无时限）</td><td>本场限量 X 份，售完即止并下架</td></tr>
+    <tr><td class="key">虚假时效</td><td>今天下单今天到、保证明天送达、全国次日达</td><td>48 小时内发出，时效以物流为准</td></tr>
+    <tr><td class="key">越权承诺</td><td>假一赔十、坏了全退不用退回、终身包换</td><td>支持七天无理由，破损按平台规则走售后</td></tr>
+    <tr><td class="key">诱导</td><td>好评返现、删差评给红包、加微信更便宜</td><td>满意请给真实评价，售后走平台客服</td></tr>
+  </tbody>
+</table>
+
+<h1 class="chapter" id="section-12">附录二　单场复盘表</h1>
+<table>
+  <thead>
+    <tr><th style="width:38%">项目</th><th>内容</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>日期 / 账号 / 场次</td><td>　</td></tr>
+    <tr><td>时段 / 时长</td><td>　</td></tr>
+    <tr><td>主推商品与到手价</td><td>　</td></tr>
+    <tr><td>观看人数 / 峰值在线</td><td>　</td></tr>
+    <tr><td>平均停留 / 新增粉丝</td><td>　</td></tr>
+    <tr><td>订单量 / GMV / 支付转化率</td><td>　</td></tr>
+    <tr><td>退款数 / 退款率 / 差评数</td><td>　</td></tr>
+    <tr><td>发货超时单数</td><td>　</td></tr>
+    <tr><td>异常记录（断流、错价、超卖、链接失效）</td><td>　</td></tr>
+    <tr><td>做得好 3 条</td><td>　</td></tr>
+    <tr><td>必须改 1 条</td><td>　</td></tr>
+    <tr><td>需供应链或仓储配合事项</td><td>　</td></tr>
+    <tr><td>主播签字 / 店长确认 / 运营总监阅</td><td>　</td></tr>
+  </tbody>
+</table>
+
+<h1 class="chapter" id="section-13">附录三　开播前十分钟清单</h1>
+<p>逐项打勾，全部打勾才开播。</p>
+<table>
+  <thead>
+    <tr><th style="width:8%">序</th><th style="width:70%">检查项</th><th>完成</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>口径表十二项已逐条核对</td><td>　</td></tr>
+    <tr><td>2</td><td>商品资质与授权文件在册且在有效期</td><td>　</td></tr>
+    <tr><td>3</td><td>镜头内无杂物、破损品、待处理品</td><td>　</td></tr>
+    <tr><td>4</td><td class="key">快递面单已遮蔽或撕除</td><td>　</td></tr>
+    <tr><td>5</td><td>无私人用品、外卖盒、竞品物料入镜</td><td>　</td></tr>
+    <tr><td>6</td><td>着装、工牌、手套到位</td><td>　</td></tr>
+    <tr><td>7</td><td>试录 15 秒回放，声音正常</td><td>　</td></tr>
+    <tr><td>8</td><td>主备网络都通，电量充足</td><td>　</td></tr>
+    <tr><td>9</td><td>商品链接、库存、优惠券、运费模板已核</td><td>　</td></tr>
+    <tr><td>10</td><td>禁用词清单已扫一眼</td><td>　</td></tr>
+  </tbody>
+</table>
+
+<p class="endnote">本手册自公布之日起施行。签署《知悉确认书》后方可独立排播。</p>
+<p class="endnote">文件编号：DS-SC-2026-01　|　解释与修订：运营总监　|　版本：V1.0</p>
+
+</section>
+</body>
+</html>

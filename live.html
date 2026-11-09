@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实时监看 · 直播监督工作台</title>
+<link rel="stylesheet" href="assets/base.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">监</div>
+      <div><b>直播监督工作台</b><span>LIVE OPS · V1.0</span></div>
+    </div>
+    <a class="nav-item" href="index.html"><span class="dot"></span>总览<span class="tag">00</span></a>
+    <a class="nav-item" href="system.html"><span class="dot"></span>监督体系<span class="tag">01</span></a>
+    <a class="nav-item" href="scoring.html"><span class="dot"></span>状态评分<span class="tag">02</span></a>
+    <a class="nav-item" href="manual.html"><span class="dot"></span>合规手册<span class="tag">03</span></a>
+    <a class="nav-item" href="check.html"><span class="dot"></span>开播核对卡<span class="tag">04</span></a>
+    <a class="nav-item" href="tuangou.html"><span class="dot"></span>团购版手册<span class="tag">05</span></a>
+    <a class="nav-item active" href="live.html"><span class="dot"></span>实时监看<span class="tag">06</span></a>
+    <div class="foot">食品类目电商直播<br>团购券 · 到店核销</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="crumb">模块 06 · 实时监看</span>
+      <div class="spacer"></div>
+      <span id="statusBadge" class="badge">读取中…</span>
+      <button class="btn sm" id="btnRefresh">立即刷新</button>
+      <a class="btn sm" href="http://127.0.0.1:8765" target="_blank" rel="noopener">打开 LiveVision 看板</a>
+    </div>
+
+    <div class="content">
+      <div class="wrap-wide">
+        <div class="page-h">
+          <div class="eyebrow">模块 06 · 实时监看</div>
+          <h2>直播间实时状态</h2>
+          <p>直接读取 LiveVision 监看链路产出的 <code>latest.json</code>，每 30 秒自动刷新。分数与等级按《评分与扣分表 v1.1》口径；出镜率门槛按房间形态分别标定（正常坐播 2%、海报式布局 0.8%）。</p>
+        </div>
+
+        <div id="alertBox"></div>
+
+        <div id="roomGrid" style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:18px"></div>
+
+        <div class="grid g2" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start">
+          <div class="card">
+            <div class="card-h"><h3>数据源</h3><p>判断「没有数据」和「真的没在播」的区别。</p></div>
+            <div class="card-b" style="padding-top:10px">
+              <table class="tbl">
+                <tbody id="sourceTable">
+                  <tr><td>读取中…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h"><h3>最近简报</h3><p>点时间可切换查看那一期原文。</p></div>
+            <div class="card-b" style="padding-top:10px">
+              <div class="row" id="reportList" style="gap:6px"></div>
+              <div class="hr"></div>
+              <div class="doc" id="reportBody" style="font-size:13.4px;line-height:1.8;max-height:340px;overflow:auto">
+                <div class="empty">读取中…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <div class="card-h"><h3>口径提醒</h3></div>
+          <div class="card-b">
+            <div class="doc" style="font-size:13.4px">
+              <ul>
+                <li><b>出镜率低不等于人不在。</b>海报式布局或主播偏小的房间，人脸占比天然偏低，门槛要按房间单独标定，否则正常在岗会被判成不出镜。</li>
+                <li><b>玩手机漏检严重。</b>COCO 模型对手机这类小目标的召回有限，不能作为处罚依据，只能作为巡场线索。</li>
+                <li><b>语音活跃率必须叠声纹。</b>VAD 只认「有人在说」，不认「是谁在说」；放录音、助播顶播都靠声纹补。</li>
+                <li><b>黑屏、贴片、断流期间不计离岗。</b>平台故障不能算到主播头上，报告里要看 <code>thresholds_used</code> 和事件上下文。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/live.js"></script>
+</body>
+</html>

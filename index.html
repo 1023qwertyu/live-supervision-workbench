@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>总览 · 直播监督工作台</title>
+<link rel="stylesheet" href="assets/base.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">监</div>
+      <div><b>直播监督工作台</b><span>LIVE OPS · V1.0</span></div>
+    </div>
+    <a class="nav-item active" href="index.html"><span class="dot"></span>总览<span class="tag">00</span></a>
+    <a class="nav-item" href="system.html"><span class="dot"></span>监督体系<span class="tag">01</span></a>
+    <a class="nav-item" href="scoring.html"><span class="dot"></span>状态评分<span class="tag">02</span></a>
+    <a class="nav-item" href="manual.html"><span class="dot"></span>合规手册<span class="tag">03</span></a>
+    <a class="nav-item" href="check.html"><span class="dot"></span>开播核对卡<span class="tag">04</span></a>
+    <a class="nav-item" href="tuangou.html"><span class="dot"></span>团购版手册<span class="tag">05</span></a>
+    <a class="nav-item" href="live.html"><span class="dot"></span>实时监看<span class="tag">06</span></a>
+    <div class="foot">食品类目电商直播<br>团购券 · 到店核销</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="crumb">总览</span>
+      <div class="spacer"></div>
+      <span class="badge" id="liveBadge">读取中…</span>
+      <button class="btn sm" id="btnRefresh">刷新数据</button>
+    </div>
+
+    <div class="content">
+      <div class="wrap-wide">
+
+        <div class="page-h">
+          <div class="eyebrow">LIVE OPS · 直播监督工作台</div>
+          <h2>一屏管住一场直播</h2>
+          <p>制度、评分、手册、核对卡、实时监看装在一个界面里。左边选模块，右边直接干：该查的查得到，该打的分打得出来，该勾的清单勾得完。</p>
+        </div>
+
+        <!-- 实时概览 -->
+        <div class="grid g4" style="margin-bottom:20px">
+          <div class="card stat">
+            <div class="lab">在监房间</div>
+            <div class="val" id="kRooms">—</div>
+            <div class="sub" id="kRoomsSub">读取中</div>
+          </div>
+          <div class="card stat">
+            <div class="lab">最低得分</div>
+            <div class="val" id="kMin">—</div>
+            <div class="sub" id="kMinSub">—</div>
+          </div>
+          <div class="card stat">
+            <div class="lab">数据新鲜度</div>
+            <div class="val" id="kAge">—</div>
+            <div class="sub" id="kAgeSub">—</div>
+          </div>
+          <div class="card stat">
+            <div class="lab">今日核对完成度</div>
+            <div class="val" id="kCheck">—</div>
+            <div class="sub"><a href="check.html">去打勾 →</a></div>
+          </div>
+        </div>
+
+        <!-- 全局搜索 -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-b">
+            <div class="row" style="gap:12px">
+              <b style="font-size:14px;white-space:nowrap">全库搜索</b>
+              <input id="gq" type="text" placeholder="搜「红线」「出镜率」「排班」「核销」…　三份文档一次搜完" style="flex:1">
+              <span class="small" id="gqCount"></span>
+            </div>
+            <div id="gqResult" style="margin-top:4px"></div>
+          </div>
+        </div>
+
+        <!-- 模块 -->
+        <div class="grid g3">
+          <a class="mod" href="system.html">
+            <div class="k"><span class="idx">01</span><h3>监督体系</h3></div>
+            <p>三层防线、六类检查项、红黄线判定、分层排期、评分卡与四级响应。管理层查规则用这一页。</p>
+            <div class="meta"><span>制度底稿</span><span>9 章 · 42 表</span></div>
+          </a>
+          <a class="mod" href="scoring.html">
+            <div class="k"><span class="idx">02</span><h3>状态评分</h3></div>
+            <p>填本场数据，自动算 CR / VAR、逐项扣分、得分定级，含硬门槛封顶与场次台账导出。</p>
+            <div class="meta"><span>替代 Excel</span><span>可导出 CSV</span></div>
+          </a>
+          <a class="mod" href="manual.html">
+            <div class="k"><span class="idx">03</span><h3>合规手册</h3></div>
+            <p>出镜主播、助播、场控的十章读本：开播前四件事、六步讲解、红线 19 条、禁用词表。</p>
+            <div class="meta"><span>人员读本</span><span>十章 + 三附录</span></div>
+          </a>
+          <a class="mod" href="check.html">
+            <div class="k"><span class="idx">04</span><h3>开播核对卡</h3></div>
+            <p>30 秒三步核对、开播前 60 秒、早班 30 分钟清单、绿幕八项条件——全部可勾选、可留痕。</p>
+            <div class="meta"><span>可勾选</span><span>按日重置</span></div>
+          </a>
+          <a class="mod" href="tuangou.html">
+            <div class="k"><span class="idx">05</span><h3>团购版手册</h3></div>
+            <p>团购券销售 + 到店核销口径：排班纪律、化妆标准、七环节分工、绿幕画面源管理。</p>
+            <div class="meta"><span>V2.1</span><span>十一章 + 六附录</span></div>
+          </a>
+          <a class="mod" href="live.html">
+            <div class="k"><span class="idx">06</span><h3>实时监看</h3></div>
+            <p>读 LiveVision 产出的 latest.json：各房间得分、等级、出镜率、语音活跃率与最近简报。</p>
+            <div class="meta"><span>实时</span><span>30 秒刷新</span></div>
+          </a>
+        </div>
+
+        <div class="grid g2" style="margin-top:20px;align-items:start">
+          <div class="card">
+            <div class="card-h"><h3>怎么启动</h3><p>双击 index.html 也能看文档，但实时数据要跑本地服务。</p></div>
+            <div class="card-b">
+              <div class="doc" style="font-size:13.4px">
+                <p>在工作台目录执行：</p>
+                <p><code style="background:#F1F5F9;padding:3px 8px;border-radius:6px;border:1px solid #E1E8F0">python serve.py</code></p>
+                <p>然后浏览器打开 <code style="background:#F1F5F9;padding:3px 8px;border-radius:6px;border:1px solid #E1E8F0">http://127.0.0.1:8787</code>。默认会尝试自动打开浏览器。</p>
+                <p class="small">数据来源：<code>D:\LiveVision\output\periodic\</code>。换机器或换路径时设环境变量 <code>LIVEVISION_DIR</code> 即可。</p>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h3>这套东西的边界</h3><p>写清楚才不会用错。</p></div>
+            <div class="card-b">
+              <div class="doc" style="font-size:13.4px">
+                <ul>
+                  <li><b>能当处罚依据的：</b>离岗、趴桌、静音超时、出镜率、语音活跃率（叠声纹）。</li>
+                  <li><b>只能当线索的：</b>玩手机（漏检严重）、专注率/走神（F1 仅 0.25–0.48，不参与评分）。</li>
+                  <li><b>必须人工核的：</b>代播、播放录播——系统只给「待核」，不给结论。</li>
+                  <li><b>口径唯一的：</b>语音活跃率 < 80% 封顶 C，< 70% 直接 D；这条不改。</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/index.js"></script>
+</body>
+</html>
