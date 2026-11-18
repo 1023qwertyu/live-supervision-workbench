@@ -22,7 +22,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 LIVE_DIR = os.environ.get("LIVEVISION_DIR", r"D:/LiveVision")
 PERIODIC = os.path.join(LIVE_DIR, "output", "periodic")
 SNAP_DIR = os.path.join(LIVE_DIR, "output", "live")
-SNAP_FRESH_SEC = 60           # 快照 15 秒一刷，超过 60 秒没动就当这一路已经停了
+SNAP_FRESH_SEC = 180          # 超过这么久没刷新就当这一路已经停了（要能覆盖断流重连）
+SNAP_LAG_SEC = 60             # 超过这个还没刷新 = 可能在断流重连，页面上要标出来
 REPORT_RE = re.compile(r"^report_[\w\-]+\.md$")
 
 
@@ -82,6 +83,9 @@ def snapshot_rooms():
             "speech_segments": a.get("speech_segments"),
             "events": d.get("events"),
             "video_sec": d.get("video_sec"),
+            # 这间房自己多久没刷新：断流重连期间 monitor 不写快照，页面要能看出来
+            "age_sec": round(age, 1),
+            "lagging": age > SNAP_LAG_SEC,
         }
         if newest is None or age < newest:
             newest, newest_ts = age, d.get("updated_at")
