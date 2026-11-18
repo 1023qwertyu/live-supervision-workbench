@@ -50,8 +50,12 @@
       // 会渲染出「0.0 分 / 0.0%」，比显示「—」更容易骗人。
       var cr = r.cr == null ? null : r.cr * 100;
       var va = r.var == null ? null : r.var * 100;
+      // 断流重连时 monitor 不写快照，分数会停在断流前那一瞬；标出来别让人当实时看
+      var lag = r.lagging
+        ? '<span style="color:#B8860B;font-size:11.5px;margin-left:6px">· 延迟 ' + Math.round(r.age_sec || 0) + ' 秒</span>'
+        : '';
       return '<div class="card stat" style="flex:1 1 260px;max-width:340px;min-width:240px">'
-        + '<div class="row"><span style="font-weight:600;font-size:14.5px">' + k + '</span>'
+        + '<div class="row"><span style="font-weight:600;font-size:14.5px">' + k + lag + '</span>'
         + '<span class="badge ' + (LV[lv] || 'd') + '" style="margin-left:auto">' + (lv || '—') + ' 级</span></div>'
         + '<div class="val">' + (r.score == null ? '—' : Number(r.score).toFixed(1)) + '<small>分</small></div>'
         + '<table class="tbl" style="margin-top:10px;font-size:12.6px"><tbody>'
