@@ -41,8 +41,21 @@
           $('kMinSub').textContent = '无数据';
         }
 
-        $('kAge').textContent = d.ok ? ago(d.age_seconds) : '—';
-        $('kAgeSub').textContent = d.stale ? '数据已过期，检查汇报器' : '当前正常';
+        // 数据新鲜度显示「具体几点几分几秒」，而不是只有「N 秒前」——
+        // 快照模式下每间房各有自己的时间，取最新那一份；简报模式带上日期，别让 8 天前看着像今天。
+        var isSnap = d.source === 'snapshot';
+        var stamps = keys.map(function (k) { return rooms[k] && rooms[k].updated_at; })
+          .filter(function (x) { return !!x; }).sort();
+        var newest = stamps.length ? stamps[stamps.length - 1]
+          : ((d.generated_at && d.source === 'periodic') ? d.generated_at : '');
+        if (d.ok && newest && newest.length >= 19) {
+          $('kAge').textContent = isSnap ? newest.slice(11, 19) : newest.slice(5, 10) + ' ' + newest.slice(11, 16);
+        } else {
+          $('kAge').textContent = d.ok ? ago(d.age_seconds) : '—';
+        }
+        $('kAgeSub').textContent = d.stale
+          ? '数据已过期 · ' + ago(d.age_seconds) + '前'
+          : ago(d.age_seconds) + '前 · 当前正常';
 
         var b = $('liveBadge');
         if (!d.ok) { b.className = 'badge d'; b.textContent = '无数据'; }

@@ -28,6 +28,23 @@
     return out.join('');
   }
 
+  // 时间格式化：每间房各自的数据时间要能直接读出「几点几分几秒」
+  function hhmmss(iso) {
+    if (!iso || iso.length < 19) return '—';
+    return iso.slice(11, 19);
+  }
+  function hhmm(iso) {
+    if (!iso || iso.length < 16) return '—';
+    return iso.slice(11, 16);
+  }
+  function hms(sec) {
+    sec = Math.max(0, Math.round(sec || 0));
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    if (h) return h + ' 小时 ' + m + ' 分';
+    if (m) return m + ' 分 ' + s + ' 秒';
+    return s + ' 秒';
+  }
+
   function renderRooms(rooms) {
     var keys = Object.keys(rooms || {});
     if (!keys.length) {
@@ -58,11 +75,15 @@
         + '<div class="row"><span style="font-weight:600;font-size:14.5px">' + k + lag + '</span>'
         + '<span class="badge ' + (LV[lv] || 'd') + '" style="margin-left:auto">' + (lv || '—') + ' 级</span></div>'
         + '<div class="val">' + (r.score == null ? '—' : Number(r.score).toFixed(1)) + '<small>分</small></div>'
-        + '<table class="tbl" style="margin-top:10px;font-size:12.6px"><tbody>'
+        + '<div style="margin-top:2px;font-size:12.5px;color:' + (r.lagging ? '#B8860B' : '#6B8199') + '">'
+        + '数据时间 <b style="font-weight:600;color:' + (r.lagging ? '#B8860B' : '#2C3E50') + '">'
+        + hhmmss(r.updated_at) + '</b></div>'
+        + '<table class="tbl" style="margin-top:8px;font-size:12.6px"><tbody>'
         + '<tr><td style="color:#6B8199;padding-left:0">出镜率</td><td class="num" style="padding-right:0">' + (cr === null ? '—' : cr.toFixed(1) + '%') + '</td></tr>'
         + '<tr><td style="color:#6B8199;padding-left:0">语音活跃率</td><td class="num" style="padding-right:0">' + (va === null ? '—' : va.toFixed(1) + '%') + '</td></tr>'
         + '<tr><td style="color:#6B8199;padding-left:0">异常事件</td><td class="num" style="padding-right:0">' + (r.events == null ? '—' : r.events) + ' 条</td></tr>'
-        + '<tr><td style="color:#6B8199;padding-left:0">监看时长</td><td class="num" style="padding-right:0">' + (r.video_sec == null ? '—' : Math.round(r.video_sec) + ' 秒') + '</td></tr>'
+        + '<tr><td style="color:#6B8199;padding-left:0">本场开始</td><td class="num" style="padding-right:0">' + hhmm(r.started_at) + '</td></tr>'
+        + '<tr><td style="color:#6B8199;padding-left:0">已监看</td><td class="num" style="padding-right:0">' + (r.video_sec == null ? '—' : hms(r.video_sec)) + '</td></tr>'
         + '</tbody></table></div>';
     }).join('');
   }
