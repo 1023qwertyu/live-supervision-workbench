@@ -28,7 +28,7 @@
   .lv-issue:hover{filter:brightness(0.985)}
 
   .lv-list{border:1px solid #E3E9F0;border-radius:10px;overflow:hidden;background:#fff}
-  .lv-row{display:grid;grid-template-columns:8px 1.4fr 88px 92px 1.6fr 92px 16px;
+  .lv-row{display:grid;grid-template-columns:8px minmax(0,1.4fr) 76px 82px minmax(0,1.6fr) 84px 14px;
     align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F0F3F7;
     cursor:pointer;font-size:13.2px}
   .lv-row:last-child{border-bottom:none}
@@ -42,7 +42,7 @@
   .lv-prob.bad{color:#C62828;font-weight:600}.lv-prob.warn{color:#8A6D3B}
   .lv-time{color:#6B8199;font-variant-numeric:tabular-nums;font-size:12.5px;text-align:right}
   .lv-arrow{color:#C7D2DD;text-align:right}
-  .lv-head{display:grid;grid-template-columns:8px 1.4fr 88px 92px 1.6fr 92px 16px;gap:10px;
+  .lv-head{display:grid;grid-template-columns:8px minmax(0,1.4fr) 76px 82px minmax(0,1.6fr) 84px 14px;gap:10px;
     padding:8px 14px;background:#FAFCFE;border-bottom:1px solid #EDF1F6;
     font-size:11.5px;color:#8A99A8;letter-spacing:.03em}
   .lv-empty{padding:28px;text-align:center;color:#8A99A8;font-size:13px}
@@ -77,6 +77,36 @@
   .lv-alert .t{color:#8A99A8;font-variant-numeric:tabular-nums;margin-right:6px}
   .lv-none{color:#8A99A8;font-size:12.8px;padding:6px 0}
   .lv-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+
+  /* 顶栏在窄屏要能换行，否则「数据过期 · 195 小时前」会被裁掉 */
+  .topbar{flex-wrap:wrap;gap:8px}
+  .lv-bar{flex-wrap:wrap;row-gap:6px}
+  .lv-issue{flex-wrap:wrap}
+
+  /* 手机：列表改成两行；抽屉全屏。原来 7 列定宽在 390px 下数据时间和关闭按钮都在屏幕外。 */
+  @media (max-width: 820px){
+    .lv-head{display:none}
+    /* 窄屏用 flex 换行，不用 grid：跨列 item 的最小内容宽会把整列撑爆，右侧就被裁掉 */
+    .lv-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:11px 12px}
+    .lv-dot{order:1}
+    .lv-name{order:2;flex:1 1 55%;min-width:0;white-space:normal;word-break:break-all}
+    .lv-score{order:3;margin-left:auto}
+    .lv-lv{order:4}
+    .lv-prob{order:5;flex:1 1 100%;white-space:normal;font-size:12.4px;min-width:0}
+    .lv-time{order:6;flex:1 1 100%;text-align:left;font-size:11.5px}
+    .lv-arrow{display:none}
+    .lv-bar .sep{display:none}
+    /* 异常清单在手机上：房间名和问题各占一行，不然两边互相挤 */
+    .lv-issue{gap:6px}
+    .lv-issue .who{flex:0 0 auto}
+    .lv-issue .txt{flex:1 1 100%;margin-left:0}
+    .lv-issue .go{display:none}
+    .lv-panel{width:100vw}
+    .lv-panel-b{padding:14px 16px}
+  }
+  @media (max-width: 430px){
+    .lv-metrics{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>

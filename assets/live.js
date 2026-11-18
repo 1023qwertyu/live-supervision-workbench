@@ -29,34 +29,55 @@
     return s + ' 秒';
   }
   function pct(v) { return v == null ? '—' : (v * 100).toFixed(1) + '%'; }
+  // 数值来自外部 json，一律先转数字再拼 HTML：字符串形态的字段既能造 NaN，也能塞标签
+  function n(v) { var x = Number(v); return isFinite(x) ? x : 0; }
+  // 等级只可能是 A/B/C/D，白名单外的内容一个字都不往页面上放
+  function lvOf(r) {
+    var v = String((r && r.level) || '').toUpperCase();
+    return /^[ABCD]$/.test(v) ? v : '';
+  }
 
   // ---------- 诊断：把原始指标翻译成「哪条规则不达标」 ----------
-  // 口径来自《评分与扣分表 v1.1》：语音 <80% 最高 C、<70% 直接 D；出镜率 <50% 直接 D。
+  // 口径必须和 assets/scoring.js 的 RULES 一致：
+  //   出镜率 达标线 90%（每差 5 个点扣 3 分，上限 25）；语音活跃率 达标线 80%（每差 5 点扣 2.5，上限 20）
+  //   硬门槛：语音 <70% 直接 D、出镜率 <50% 直接 D；语音 <80% 最高只能 C
+  //   离岗每 60 秒扣 2（上限 20）、手机每次 3（上限 15）、趴桌每次 10（上限 30）、
+  //   静音每 5 分钟扣 2（上限 10）、进食每次 2（上限 8）
   function diagnose(r) {
     var out = [];
     var cr = r.cr == null ? null : r.cr * 100;
     var va = r.var == null ? null : r.var * 100;
 
-    if (cr != null && cr < 50) out.push({ p: 'P0', t: '出镜率 ' + cr.toFixed(1) + '%，低于 50%（硬门槛，直接判 D）' });
-    else if (cr != null && cr < 80) out.push({ p: 'P1', t: '出镜率 ' + cr.toFixed(1) + '%，偏低（低于 80%）' });
-
-    if (va != null && va < 70) out.push({ p: 'P0', t: '语音活跃率 ' + va.toFixed(1) + '%，低于 70%（硬门槛，直接判 D）' });
-    else if (va != null && va < 80) out.push({ p: 'P1', t: '语音活跃率 ' + va.toFixed(1) + '%，低于 80%（最高只能 C）' });
-
-    if (r.prone_count > 0) out.push({ p: 'P1', t: '趴桌 ' + r.prone_count + ' 次' });
-    if (r.away_sec >= 60) out.push({ p: 'P1', t: '离岗 ' + Math.round(r.away_sec) + ' 秒' });
-    if (r.silence_min >= 5) out.push({ p: 'P2', t: '静音 ' + r.silence_min + ' 分钟' });
-    if (r.phone_count > 0) out.push({ p: 'P2', t: '低头操作手机 ' + r.phone_count + ' 次（待核）' });
-    if (r.lagging) out.push({ p: 'P2', t: '数据延迟 ' + Math.round(r.age_sec || 0) + ' 秒，可能在断流重连' });
-    if (r.link_drops > 0) out.push({ p: 'P3', t: '本场断流 ' + r.link_drops + ' 次' });
+    if (cr != null) {
+      if (cr < 50) out.push({ p: 'P0', t: '出镜率 ' + cr.toFixed(1) + '%，低于 50%（硬门槛，直接判 D）' });
+      else if (cr < 90) out.push({ p: 'P1', t: '出镜率 ' + cr.toFixed(1) + '%，低于 90% 达标线（每差 5 个点扣 3 分）' });
+    }
+    if (va != null) {
+      if (va < 70) out.push({ p: 'P0', t: '语音活跃率 ' + va.toFixed(1) + '%，低于 70%（硬门槛，直接判 D）' });
+      else if (va < 80) out.push({ p: 'P1', t: '语音活跃率 ' + va.toFixed(1) + '%，低于 80%（最高只能 C）' });
+    }
+    if (n(r.prone_count) > 0) out.push({ p: 'P1', t: '趴桌 ' + n(r.prone_count) + ' 次（每次扣 10 分）' });
+    if (n(r.away_sec) >= 60) out.push({ p: 'P1', t: '离岗 ' + Math.round(n(r.away_sec)) + ' 秒（每满 60 秒扣 2 分）' });
+    if (n(r.silence_min) >= 5) out.push({ p: 'P2', t: '静音 ' + n(r.silence_min) + ' 分钟（每满 5 分钟扣 2 分）' });
+    if (n(r.phone_count) > 0) out.push({ p: 'P2', t: '低头操作手机 ' + n(r.phone_count) + ' 次（待核，每次扣 3 分）' });
+    if (n(r.eating_count) > 0) out.push({ p: 'P2', t: '进食等无关行为 ' + n(r.eating_count) + ' 次（每次扣 2 分）' });
+    if (n(r.link_drops) > 0) out.push({ p: 'P3', t: '本场断流 ' + n(r.link_drops) + ' 次（平台侧，不计主播）' });
+    if (r.lagging) out.push({ p: 'P3', t: '数据延迟 ' + Math.round(n(r.age_sec)) + ' 秒，可能在断流重连' });
     return out;
   }
 
+  var PRANK = { P0: 0, P1: 1, P2: 2, P3: 3 };
+  function worstFirst(iss) {
+    return iss.slice().sort(function (a, b) { return PRANK[a.p] - PRANK[b.p]; });
+  }
+
+  // 状态只由 issues 决定，和清单同源；等级只作兜底，避免「显示异常却列不出异常」
   function statusOf(r, issues) {
-    var lv = (r.level || '').toUpperCase();
     if (issues.some(function (i) { return i.p === 'P0' || i.p === 'P1'; })) return 'bad';
+    if (issues.some(function (i) { return i.p === 'P2'; })) return 'warn';
+    var lv = lvOf(r);
     if (lv === 'D') return 'bad';
-    if (issues.length || lv === 'C') return 'warn';
+    if (lv === 'C') return 'warn';
     return 'ok';
   }
 
@@ -72,17 +93,32 @@
       if (s === 'bad') bad++;
       else if (s === 'warn') warn++;
     });
+    // 过期兜底数据不能算「在监」：那份是几天前的汇总，显示成绿色正常等于骗人
+    if (d && d.stale) {
+      $('sLive').textContent = '—';
+      $('sBad').textContent = '—';
+      $('sWarn').textContent = '—';
+      $('sClock').textContent = ago(d.age_seconds) + '（非实时）';
+      return { bad: 0, warn: 0, live: 0, stale: true };
+    }
     $('sLive').textContent = keys.length;
     $('sBad').textContent = bad;
     $('sWarn').textContent = warn;
     var newest = keys.map(function (k) { return rooms[k] && rooms[k].updated_at; })
       .filter(Boolean).sort().pop();
     $('sClock').textContent = hhmmss(newest) || '—';
-    return { bad: bad, warn: warn, live: keys.length };
+    return { bad: bad, warn: warn, live: keys.length, stale: false };
   }
 
   // ---------- 异常清单：只列 P0/P1，其余留在列表里 ----------
-  function renderIssues(rooms) {
+  function renderIssues(rooms, d) {
+    if (d && d.stale) {
+      $('issues').innerHTML = '<div class="lv-issue p1" style="cursor:default">'
+        + '<span class="tag">提示</span>'
+        + '<span class="txt"><b>当前没有实时数据。</b>下面是最后一次汇总（' + esc(ago(d.age_seconds))
+        + '），只作历史参考，不代表现在播得怎么样。</span></div>';
+      return;
+    }
     var rows = [];
     Object.keys(rooms || {}).forEach(function (k) {
       var r = rooms[k] || {};
@@ -91,28 +127,31 @@
         rows.push({ room: k, p: i.p, text: i.t });
       });
     });
-    rows.sort(function (a, b) { return a.p === b.p ? 0 : (a.p === 'P0' ? -1 : 1); });
+    rows.sort(function (a, b) { return PRANK[a.p] - PRANK[b.p]; });
     if (!rows.length) { $('issues').innerHTML = ''; return; }
+    var more = rows.length > 6 ? '<div style="font-size:12px;color:#8A99A8;margin:2px 0 8px">还有 ' + (rows.length - 6) + ' 条未列出，点房间看全部</div>' : '';
     $('issues').innerHTML = rows.slice(0, 6).map(function (x) {
-      return '<div class="lv-issue ' + (x.p === 'P0' ? 'p0' : 'p1') + '" data-room="' + esc(x.room) + '">'
+      return '<div class="lv-issue ' + (x.p === 'P0' ? 'p0' : 'p1') + '" data-room="' + esc(x.room)
+        + '" data-issue="' + esc(x.text) + '">'
         + '<span class="tag">' + x.p + '</span>'
         + '<span class="who">' + esc(x.room) + '</span>'
         + '<span class="txt">' + esc(x.text) + '</span>'
         + '<span class="go">查看 ›</span></div>';
-    }).join('');
+    }).join('') + more;
   }
 
   // ---------- 房间列表 ----------
-  function renderRooms(rooms) {
+  function renderRooms(rooms, d) {
     var keys = Object.keys(rooms || {});
     if (!keys.length) {
       $('roomList').innerHTML = '<div class="lv-empty">当前没有在采的直播间。未开播或全部已下播。</div>';
       return;
     }
+    var stale = !!(d && d.stale);
     var arr = keys.map(function (k) {
       var r = rooms[k] || {};
       var iss = diagnose(r);
-      return { k: k, r: r, iss: iss, st: statusOf(r, iss) };
+      return { k: k, r: r, iss: iss, st: stale ? 'warn' : statusOf(r, iss) };
     });
     arr.sort(function (a, b) {
       if (RANK[a.st] !== RANK[b.st]) return RANK[a.st] - RANK[b.st];
@@ -120,15 +159,17 @@
     });
 
     $('roomList').innerHTML = arr.map(function (o) {
-      var r = o.r, lv = (r.level || '').toUpperCase();
-      var top = o.iss.length ? o.iss[0].t : '正常';
+      var r = o.r, lv = lvOf(r);
+      // 「主要问题」要取最严重的那条，不是数组里的第一条（原来是 iss[0]，顺序取决于判断先后）
+      var top = o.iss.length ? worstFirst(o.iss)[0].t : '正常';
+      if (stale) top = '历史数据，非实时';
       var cls = o.st === 'bad' ? 'bad' : (o.st === 'warn' ? 'warn' : '');
-      var lag = r.lagging ? ' <span style="color:#B8860B">· 延迟 ' + Math.round(r.age_sec || 0) + '秒</span>' : '';
+      var lag = r.lagging ? ' <span style="color:#B8860B">· 延迟 ' + Math.round(n(r.age_sec)) + '秒</span>' : '';
       return '<div class="lv-row" data-room="' + esc(o.k) + '">'
         + '<span class="lv-dot ' + o.st + '"></span>'
         + '<span class="lv-name">' + esc(o.k) + lag + '</span>'
         + '<span class="lv-score">' + (r.score == null ? '—' : Number(r.score).toFixed(1)) + '<small>分</small></span>'
-        + '<span><span class="badge ' + (LV[lv] || 'd') + '">' + (lv || '—') + ' 级</span></span>'
+        + '<span class="lv-lv"><span class="badge ' + (LV[lv] || 'd') + '">' + (lv || '—') + ' 级</span></span>'
         + '<span class="lv-prob ' + cls + '">' + esc(top) + '</span>'
         + '<span class="lv-time">' + hhmmss(r.updated_at) + '</span>'
         + '<span class="lv-arrow">›</span></div>';
@@ -142,51 +183,47 @@
     return '<div class="bar"><i style="width:' + w + '%;background:' + color + '"></i></div>';
   }
 
-  function spark(points) {
-    if (!points || points.length < 2) {
-      return '<div class="lv-none">趋势点还不够（每 60 秒记一个点，刚接入或刚重启）。</div>';
-    }
-    var w = 500, h = 90, pad = 8;
+  // 两条线各自一张小图：共用一根轴时，90 分的场次里 70% 出镜率会被压到图底，看着像 0
+  function chart(points, idx, color, label, dynamic, scale) {
+    var vals = points.map(function (p) { return p[idx]; }).filter(function (v) { return v != null; });
+    if (points.length < 2 || !vals.length) return '';
+    var w = 500, h = 62, pad = 6;
     var t0 = points[0][0], t1 = points[points.length - 1][0];
     var span = Math.max(1, t1 - t0);
-    // 纵轴按实际数据缩放：分数一直 100 时若固定 0~100，线会贴顶看不出任何波动
-    var vals = points.map(function (p) { return p[1]; }).filter(function (v) { return v != null; });
-    var lo = vals.length ? Math.min.apply(null, vals) : 0;
-    var hi = vals.length ? Math.max.apply(null, vals) : 100;
-    var margin = Math.max(1.5, (hi - lo) * 0.25);
-    var ymin = Math.max(0, lo - margin), ymax = Math.min(100, hi + margin);
-    if (ymax - ymin < 4) { ymin = Math.max(0, ymax - 4); }
-
-    function line(idx, scale) {
-      return points.map(function (p) {
-        var v = p[idx];
-        if (v == null) return null;
-        var val = scale ? v * 100 : v;                      // 出镜率是 0~1，换算成百分数
-        var x = pad + ((p[0] - t0) / span) * (w - pad * 2);
-        var y = h - pad - ((Math.max(ymin, Math.min(ymax, val)) - ymin) / (ymax - ymin)) * (h - pad * 2);
-        return x.toFixed(1) + ',' + y.toFixed(1);
-      }).filter(Boolean).join(' ');
+    var lo = 0, hi = 100;
+    if (dynamic) {
+      var mn = Math.min.apply(null, vals.map(function (v) { return scale ? v * 100 : v; }));
+      var mx = Math.max.apply(null, vals.map(function (v) { return scale ? v * 100 : v; }));
+      var mg = Math.max(2, (mx - mn) * 0.3);
+      lo = Math.max(0, mn - mg); hi = Math.min(100, mx + mg);
+      if (hi - lo < 4) hi = lo + 4;
     }
-    var scoreLine = line(1, false);
-    var crLine = line(2, true);
-    return '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;height:90px;display:block">'
-      + '<line x1="0" y1="' + (h - pad) + '" x2="' + w + '" y2="' + (h - pad) + '" stroke="#EDF1F6" stroke-width="1"/>'
-      + (crLine ? '<polyline points="' + crLine + '" fill="none" stroke="#7FB2E5" stroke-width="1.6"/>' : '')
-      + (scoreLine ? '<polyline points="' + scoreLine + '" fill="none" stroke="#2E7D32" stroke-width="2"/>' : '')
-      + '</svg>'
-      + '<div style="display:flex;gap:16px;font-size:11.5px;color:#8A99A8;margin-top:4px">'
-      + '<span><i style="display:inline-block;width:14px;height:2px;background:#2E7D32;vertical-align:middle"></i> 得分</span>'
-      + '<span><i style="display:inline-block;width:14px;height:2px;background:#7FB2E5;vertical-align:middle"></i> 出镜率</span>'
-      + '<span style="margin-left:auto">' + points.length + ' 个点 · ' + ymin.toFixed(0) + '–' + ymax.toFixed(0) + ' 分</span>'
-      + '</div>';
+    var pts = points.map(function (p) {
+      var v = p[idx];
+      if (v == null) return null;
+      var val = scale ? v * 100 : v;
+      var x = pad + ((p[0] - t0) / span) * (w - pad * 2);
+      var y = h - pad - ((Math.max(lo, Math.min(hi, val)) - lo) / (hi - lo)) * (h - pad * 2);
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).filter(Boolean).join(' ');
+    if (!pts) return '';
+    var last = vals[vals.length - 1];
+    var lastTxt = (scale ? (last * 100).toFixed(1) + '%' : Number(last).toFixed(1) + ' 分');
+    return '<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#8A99A8;margin:6px 0 2px">'
+      + '<span>' + label + '</span><span style="color:' + color + ';font-weight:600">' + lastTxt + '</span></div>'
+      + '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;height:62px;display:block">'
+      + '<line x1="0" y1="' + (h - pad) + '" x2="' + w + '" y2="' + (h - pad) + '" stroke="#EDF1F6"/>'
+      + '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.8"/></svg>';
   }
 
-  function openDrawer(roomName) {
+  var curFocus = null;   // 当前高亮的那条异常，30 秒刷新后要保住
+
+  function openDrawer(roomName, focusText) {
+    if (focusText !== undefined) curFocus = focusText;
     var r = (DATA && DATA.rooms && DATA.rooms[roomName]) || null;
     if (!r) return;
-    var iss = diagnose(r);
-    var st = statusOf(r, iss);
-    var lv = (r.level || '').toUpperCase();
+    var iss = worstFirst(diagnose(r));
+    var lv = lvOf(r);
 
     $('dTitle').textContent = roomName;
     var b = $('dBadge');
@@ -197,9 +234,9 @@
 
     html += '<div class="lv-sec"><h4>当前状态</h4>'
       + '<div class="lv-line"><span>数据时间</span><span class="r">' + hhmmss(r.updated_at)
-      + (r.lagging ? ' <b style="color:#B8860B">（延迟 ' + Math.round(r.age_sec) + ' 秒）</b>' : '') + '</span></div>'
+      + (r.lagging ? ' <b style="color:#B8860B">（延迟 ' + Math.round(n(r.age_sec)) + ' 秒）</b>' : '') + '</span></div>'
       + '<div class="lv-line"><span>本场开始</span><span class="r">' + hhmm(r.started_at) + '</span></div>'
-      + '<div class="lv-line"><span>已监看</span><span class="r">' + (r.video_sec == null ? '—' : hms(r.video_sec)) + '</span></div>'
+      + '<div class="lv-line"><span>已监看</span><span class="r">' + (r.video_sec == null ? '—' : hms(n(r.video_sec))) + '</span></div>'
       + (r.advice ? '<div class="lv-line"><span>结论</span><span class="r">' + esc(r.advice) + '</span></div>' : '')
       + '</div>';
 
@@ -208,8 +245,11 @@
       html += '<div class="lv-none">没有触发任何规则，指标全部达标。</div>';
     } else {
       html += iss.map(function (i) {
-        var c = i.p === 'P0' ? '#C62828' : (i.p === 'P1' ? '#B8860B' : '#6B8199');
-        return '<div class="lv-line"><span><b style="color:' + c + '">' + i.p + '</b>　' + esc(i.t) + '</span></div>';
+        // 从异常清单点进来的那条要高亮，否则用户还得自己在列表里找一遍
+        var hit = curFocus && i.t === curFocus;
+        var c = i.p === 'P0' ? '#C62828' : (i.p === 'P1' ? '#B8860B' : (i.p === 'P2' ? '#6B8199' : '#8A99A8'));
+        return '<div class="lv-line" style="' + (hit ? 'background:#FFF9E6;border-radius:6px;padding-left:6px;padding-right:6px' : '') + '">'
+          + '<span><b style="color:' + c + '">' + i.p + '</b>　' + esc(i.t) + '</span></div>';
       }).join('');
     }
     html += '</div>';
@@ -217,39 +257,47 @@
     var cr = r.cr == null ? null : r.cr * 100;
     var va = r.var == null ? null : r.var * 100;
     html += '<div class="lv-sec"><h4>关键指标</h4><div class="lv-metrics">'
-      + '<div class="lv-metric"><div class="l"><span>出镜率</span><span>≥80%</span></div>'
-      + '<div class="v" style="color:' + (cr == null ? '#8A99A8' : (cr >= 80 ? '#2E7D32' : '#C62828')) + '">'
-      + (cr == null ? '—' : cr.toFixed(1) + '%') + '</div>' + bar(cr || 0, 100, cr >= 80) + '</div>'
-      + '<div class="lv-metric"><div class="l"><span>语音活跃率</span><span>≥80%</span></div>'
+      + '<div class="lv-metric"><div class="l"><span>出镜率</span><span>达标 90%</span></div>'
+      + '<div class="v" style="color:' + (cr == null ? '#8A99A8' : (cr >= 90 ? '#2E7D32' : '#C62828')) + '">'
+      + (cr == null ? '—' : cr.toFixed(1) + '%') + '</div>' + bar(cr || 0, 100, cr >= 90) + '</div>'
+      + '<div class="lv-metric"><div class="l"><span>语音活跃率</span><span>达标 80%</span></div>'
       + '<div class="v" style="color:' + (va == null ? '#8A99A8' : (va >= 80 ? '#2E7D32' : '#C62828')) + '">'
       + (va == null ? '—' : va.toFixed(1) + '%') + '</div>' + bar(va || 0, 100, va >= 80) + '</div>'
       + '<div class="lv-metric"><div class="l"><span>离岗</span><span>0 秒</span></div>'
-      + '<div class="v" style="color:' + ((r.away_sec || 0) < 60 ? '#2E7D32' : '#C62828') + '">'
-      + (r.away_sec == null ? '—' : Math.round(r.away_sec) + ' 秒') + '</div>' + bar(r.away_sec || 0, 300, (r.away_sec || 0) < 60) + '</div>'
+      + '<div class="v" style="color:' + (n(r.away_sec) < 60 ? '#2E7D32' : '#C62828') + '">'
+      + (r.away_sec == null ? '—' : Math.round(n(r.away_sec)) + ' 秒') + '</div>' + bar(n(r.away_sec), 300, n(r.away_sec) < 60) + '</div>'
       + '<div class="lv-metric"><div class="l"><span>静音</span><span>0 分</span></div>'
-      + '<div class="v" style="color:' + ((r.silence_min || 0) < 5 ? '#2E7D32' : '#C62828') + '">'
-      + (r.silence_min == null ? '—' : r.silence_min + ' 分') + '</div>' + bar(r.silence_min || 0, 20, (r.silence_min || 0) < 5) + '</div>'
+      + '<div class="v" style="color:' + (n(r.silence_min) < 5 ? '#2E7D32' : '#C62828') + '">'
+      + (r.silence_min == null ? '—' : n(r.silence_min) + ' 分') + '</div>' + bar(n(r.silence_min), 20, n(r.silence_min) < 5) + '</div>'
       + '<div class="lv-metric"><div class="l"><span>趴桌</span><span>0 次</span></div>'
-      + '<div class="v" style="color:' + (!r.prone_count ? '#2E7D32' : '#C62828') + '">'
-      + (r.prone_count == null ? '—' : r.prone_count + ' 次') + '</div></div>'
+      + '<div class="v" style="color:' + (n(r.prone_count) === 0 ? '#2E7D32' : '#C62828') + '">'
+      + (r.prone_count == null ? '—' : n(r.prone_count) + ' 次') + '</div></div>'
       + '<div class="lv-metric"><div class="l"><span>低头操作手机</span><span>待核</span></div>'
-      + '<div class="v" style="color:' + (!r.phone_count ? '#2E7D32' : '#B8860B') + '">'
-      + (r.phone_count == null ? '—' : r.phone_count + ' 次') + '</div></div>'
+      + '<div class="v" style="color:' + (n(r.phone_count) === 0 ? '#2E7D32' : '#B8860B') + '">'
+      + (r.phone_count == null ? '—' : n(r.phone_count) + ' 次') + '</div></div>'
       + '</div></div>';
 
-    html += '<div class="lv-sec"><h4>趋势（最近记录）</h4>' + spark(r.trend) + '</div>';
+    var trend = r.trend || [];
+    var c1 = chart(trend, 1, '#2E7D32', '得分（纵轴按实际范围缩放）', true, false);
+    var c2 = chart(trend, 2, '#1565C0', '出镜率', false, true);
+    html += '<div class="lv-sec"><h4>趋势</h4>'
+      + (c1 || c2 ? (c1 + c2 + '<div style="font-size:11px;color:#A8B4C0;margin-top:4px">'
+        + trend.length + ' 个点，每 60 秒记一个（只在本页打开时记录）</div>')
+        : '<div class="lv-none">趋势点还不够（每 60 秒记一个点，刚接入或刚重启）。</div>')
+      + '</div>';
 
     html += '<div class="lv-sec"><h4>扣分明细 / 影响范围</h4>';
-    var items = (r.items || []).filter(function (i) { return i && (i.points || 0) > 0; });
+    var items = (r.items || []).filter(function (i) { return i && Number(i.points) > 0; });
     if (!items.length) {
       html += '<div class="lv-none">本场没有扣分项（满分）。</div>';
     } else {
       html += items.map(function (i) {
         return '<div class="lv-line"><span>' + esc(i.item) + '　<span style="color:#8A99A8">' + esc(i.measured) + '</span></span>'
-          + '<span class="r" style="color:#C62828">-' + i.points + ' 分</span></div>';
+          + '<span class="r" style="color:#C62828">-' + Number(i.points).toFixed(1) + ' 分</span></div>';
       }).join('');
-      var total = items.reduce(function (s, i) { return s + (i.points || 0); }, 0);
-      html += '<div class="lv-line"><span><b>合计扣分</b></span><span class="r" style="color:#C62828;font-weight:700">-' + total.toFixed(1) + ' 分</span></div>';
+      var total = items.reduce(function (s, i) { return s + Number(i.points || 0); }, 0);
+      html += '<div class="lv-line"><span><b>合计扣分（本场累计）</b></span>'
+        + '<span class="r" style="color:#C62828;font-weight:700">-' + total.toFixed(1) + ' 分</span></div>';
     }
     html += '</div>';
 
@@ -267,7 +315,7 @@
 
     html += '<div class="lv-sec"><h4>定位入口</h4><div class="lv-actions">'
       + (DATA && DATA.evidence_url
-        ? '<a class="btn sm" href="' + esc(DATA.evidence_url) + '" target="_blank" rel="noopener">打开证据查询台</a>'
+        ? '<a class="btn sm" href="' + esc(DATA.evidence_url) + '" target="_blank" rel="noopener">打开证据查询台看录像</a>'
         : '<span class="lv-none">证据台地址未探测到（手机同 WiFi 可用 http://本机IP:8771）</span>')
       + '</div></div>';
 
@@ -279,6 +327,7 @@
   function closeDrawer() {
     $('drawer').classList.remove('open');
     $('drawer').setAttribute('aria-hidden', 'true');
+    curFocus = null;
   }
 
   // ---------- 折叠区：数据源 + 简报 ----------
@@ -304,11 +353,13 @@
     }).join('');
   }
 
+  var reportPicked = false;   // 用户点过某一期，就别再每 30 秒把阅读位置顶掉
+
   function renderReports(d) {
     var list = d.reports || [];
     if (!list.length) {
       $('reportList').innerHTML = '<span class="small">还没有简报产出。</span>';
-      $('reportBody').innerHTML = '<div class="lv-none">没有简报文件。</div>';
+      if (!reportPicked) $('reportBody').innerHTML = '<div class="lv-none">没有简报文件。</div>';
       return;
     }
     var m2 = (list[0].name || '').match(/report_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})/);
@@ -328,6 +379,7 @@
     $('reportList').onclick = function (e) {
       var b = e.target.closest('[data-report]');
       if (!b) return;
+      reportPicked = true;
       fetch('/api/report?name=' + encodeURIComponent(b.getAttribute('data-report')))
         .then(function (r) { return r.json(); })
         .then(function (j) {
@@ -335,7 +387,10 @@
         })
         .catch(function () { $('reportBody').innerHTML = '<div class="lv-none">读取失败</div>'; });
     };
-    $('reportBody').innerHTML = note + (d.latest_report ? md2html(d.latest_report) : '<div class="lv-none">没有简报正文。</div>');
+    // 只在用户没手动翻过的时候才自动填充，否则每 30 秒会把正在读的那期顶掉
+    if (!reportPicked) {
+      $('reportBody').innerHTML = note + (d.latest_report ? md2html(d.latest_report) : '<div class="lv-none">没有简报正文。</div>');
+    }
   }
 
   // ---------- 状态徽标 ----------
@@ -353,8 +408,8 @@
     DATA = d;
     setStatus(d);
     var s = renderSummary(d.rooms, d);
-    renderIssues(d.rooms);
-    renderRooms(d.rooms);
+    renderIssues(d.rooms, d);
+    renderRooms(d.rooms, d);
     renderSource(d);
     renderReports(d);
 
@@ -376,12 +431,20 @@
     return s;
   }
 
+  var reqSeq = 0;
+
   function load() {
+    var my = ++reqSeq;
     fetch('/api/live', { cache: 'no-store' })
       .then(function (r) { return r.json(); })
-      .then(render)
+      .then(function (d) {
+        if (my !== reqSeq) return;     // 先发的旧响应后到，直接丢掉，别把页面刷回旧数据
+        render(d);
+      })
       .catch(function () {
+        if (my !== reqSeq) return;
         setStatus(null);
+        closeDrawer();                 // 数据没了，抽屉里的旧数字不能留着冒充实时
         $('roomList').innerHTML = '<div class="lv-empty">读不到数据。请确认本地服务在跑：'
           + '<code>python serve.py</code>，然后访问 http://127.0.0.1:8787/live.html</div>';
         $('issues').innerHTML = '';
@@ -396,7 +459,11 @@
     // 点异常清单或列表行 → 开抽屉
     document.addEventListener('click', function (e) {
       var t = e.target.closest('[data-room]');
-      if (t) { openDrawer(t.getAttribute('data-room')); return; }
+      if (t) {
+        // 从异常清单点进来时带上那条描述，抽屉里会高亮它
+        openDrawer(t.getAttribute('data-room'), t.getAttribute('data-issue'));
+        return;
+      }
       if (e.target.id === 'drawerMask' || e.target.id === 'drawerClose') closeDrawer();
     });
     document.addEventListener('keydown', function (e) {

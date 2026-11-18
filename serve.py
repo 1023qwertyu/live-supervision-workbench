@@ -184,6 +184,15 @@ def trend_add(rooms):
         pts.append([now, r.get("score"), r.get("cr"), r.get("var")])
         data[name] = pts[-TREND_KEEP:]
         changed = True
+    # 回收：房间已经不在采、且最后一点超过 3 天的，整条删掉；
+    # 否则改过名/临时测试过的房间会永久留在文件里，每 60 秒跟着重写一遍。
+    for k in list(data):
+        if k in rooms:
+            continue
+        pts = data.get(k)
+        if not isinstance(pts, list) or not pts or (now - int(pts[-1][0] or 0)) > 3 * 86400:
+            del data[k]
+            changed = True
     if changed:
         try:
             os.makedirs(os.path.dirname(TREND_PATH), exist_ok=True)
