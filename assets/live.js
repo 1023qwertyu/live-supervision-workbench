@@ -115,7 +115,19 @@
         .catch(function () { $('reportBody').innerHTML = '<div class="empty">读取失败。</div>'; });
     };
 
-    $('reportBody').innerHTML = d.latest_report ? md2html(d.latest_report) : '<div class="empty">没有简报正文。</div>';
+    // 简报是「汇报器」每半小时产出的，跟实时快照不是一条链路。
+    // 汇报器停着的时候，这里显示的可能是好几天前的正文——不标出来会以为是当前数据。
+    var note = '';
+    if (d.source === 'snapshot') {
+      var m2 = (list[0].name || '').match(/report_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})/);
+      var when = m2 ? (m2[1] + '-' + m2[2] + '-' + m2[3] + ' ' + m2[4] + ':' + m2[5]) : '较早';
+      note = '<div style="margin-bottom:12px;text-align:left;color:#8A6D3B;background:#FCF8E3;'
+        + 'border:1px solid #F0E0B8;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6">'
+        + '下面是 <b>' + when + '</b> 的历史简报（汇报器当前没有运行）。'
+        + '<b>实时分数请看上方卡片</b>，那部分每 15 秒刷新一次。'
+        + '</div>';
+    }
+    $('reportBody').innerHTML = note + (d.latest_report ? md2html(d.latest_report) : '<div class="empty">没有简报正文。</div>');
   }
 
   function setStatus(d) {
