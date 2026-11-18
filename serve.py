@@ -155,6 +155,14 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=HERE, **kwargs)
 
+    def end_headers(self):
+        # 前端文件（html/js/css/json）一律不缓存：改完代码后浏览器还在用旧版本，
+        # 表现就是「明明改了、页面显示的还是以前那套」（2026-11-18 实际踩到）。
+        if self.path.split("?")[0].endswith((".html", ".js", ".css", ".json")):
+            self.send_header("Cache-Control", "no-store, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+        super().end_headers()
+
     def _json(self, obj):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(200)
