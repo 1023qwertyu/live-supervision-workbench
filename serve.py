@@ -21,6 +21,8 @@ from urllib.parse import parse_qs, urlparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIVE_DIR = os.environ.get("LIVEVISION_DIR", r"D:/LiveVision")
 PERIODIC = os.path.join(LIVE_DIR, "output", "periodic")
+SNAP_DIR = os.path.join(LIVE_DIR, "output", "live")
+SNAP_FRESH_SEC = 60           # 快照 15 秒一刷，超过 60 秒没动就当这一路已经停了
 REPORT_RE = re.compile(r"^report_[\w\-]+\.md$")
 
 
@@ -30,6 +32,60 @@ def read_json(path, default=None):
             return json.load(f)
     except Exception:
         return default
+
+
+def snapshot_rooms():
+    """读 daemon 每 15 秒写的实时快照（output/live/*.json）
+
+    为什么先读这里：每半小时一份的简报（periodic/latest.json）只有汇报器在跑时才更新，
+    汇报器一停，首页就一直显示「数据已过期」，而真正在采的房间其实好好的。
+    输出的字段与简报对齐，前端不用改。
+    返回 (rooms, 最新一份快照距今秒数, 最新一份快照的时间字符串)。
+    """
+    rooms, newest, newest_ts = {}, None, None
+    try:
+        names = os.listdir(SNAP_DIR)
+    except OSError:
+        return rooms, newest, newest_ts      # 盘没挂上/目录没了，别把整个接口带崩
+    now = time.time()
+    for name in names:
+        if not name.endswith(".json"):
+            continue
+        d = read_json(os.path.join(SNAP_DIR, name))
+        if not isinstance(d, dict) or not d.get("running"):
+            continue
+        try:
+            age = now - time.mktime(time.strptime(d.get("updated_at"), "%Y-%m-%dT%H:%M:%S"))
+        except Exception:
+            continue
+        if age > SNAP_FRESH_SEC:
+            continue                     # 快照很久没刷 = 这一路已停，不能当实时
+        if age < -5:
+            continue                     # 时间戳比现在还超前 = 写端时钟不对，不能当实时
+        age = max(0.0, age)              # 几秒的时钟抖动夹到 0，别显示「-2 秒前」
+        # 只认 dict：真值但不是 dict（比如被写成字符串）会让 .get 抛 AttributeError，
+        # 整页直接断连、前端显示「未启动服务」，比少一间严重得多。
+        m = d.get("metrics") if isinstance(d.get("metrics"), dict) else {}
+        s = d.get("score") if isinstance(d.get("score"), dict) else {}
+        a = d.get("audio") if isinstance(d.get("audio"), dict) else {}
+        # 房间名要当字典键：list/dict 不可哈希会抛 TypeError，同样能打挂整个接口
+        key = d.get("room")
+        if not isinstance(key, str) or not key:
+            key = name[:-5]
+        rooms[key] = {
+            "score": s.get("score"),
+            "level": s.get("level"),
+            "cr": m.get("cr"),
+            "var": m.get("var"),
+            "max_silence_sec": a.get("max_silence_sec"),
+            "silence_segments": a.get("silence_segments"),
+            "speech_segments": a.get("speech_segments"),
+            "events": d.get("events"),
+            "video_sec": d.get("video_sec"),
+        }
+        if newest is None or age < newest:
+            newest, newest_ts = age, d.get("updated_at")
+    return rooms, newest, newest_ts
 
 
 def live_payload():
@@ -64,17 +120,28 @@ def live_payload():
         except Exception:
             age = None
 
+    # 实时快照优先：确实有人在采就以它为准（15 秒一刷），简报只在没人在采时兜底
+    snap, snap_age, snap_ts = snapshot_rooms()
+    if snap:
+        rooms, age, source = snap, int(snap_age or 0), "snapshot"
+    else:
+        rooms, source = (latest or {}).get("rooms", {}), "periodic"
+
+    # 快照模式下，简报的 generated_at / 心跳 / 窗口都是上一套链路的产物，
+    # 原样返回会渲染出「0 秒前」配「8 天前的数据时间」这种自相矛盾的一屏。
+    live_mode = source == "snapshot"
     return {
-        "ok": bool(latest),
+        "ok": bool(latest) or bool(snap),
         "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),
         "periodic_dir": PERIODIC,
         "exists": os.path.isdir(PERIODIC),
-        "generated_at": (latest or {}).get("generated_at"),
-        "window_minutes": (latest or {}).get("window_minutes"),
-        "rooms": (latest or {}).get("rooms", {}),
+        "generated_at": snap_ts if live_mode else (latest or {}).get("generated_at"),
+        "window_minutes": None if live_mode else (latest or {}).get("window_minutes"),
+        "rooms": rooms,
+        "source": source,
         "age_seconds": age,
-        "stale": (age is None or age > 40 * 60) if latest else True,
-        "heartbeat": beat,
+        "stale": (age is None or age > 40 * 60),
+        "heartbeat": None if live_mode else beat,
         "reports": reports[:20],
         "latest_report": md_text,
     }

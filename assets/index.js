@@ -21,13 +21,21 @@
         $('kRoomsSub').textContent = keys.length ? keys.join(' · ') : '当前没有在监房间';
 
         if (keys.length) {
-          var worst = keys.map(function (k) { return rooms[k]; })
-            .sort(function (a, b) { return (a.score || 0) - (b.score || 0); })[0];
-          var lv = (worst.level || '').toUpperCase();
-          $('kMin').innerHTML = Number(worst.score || 0).toFixed(1) + '<small>分</small>';
-          $('kMinSub').textContent = lv
-            ? '等级 ' + lv + (lv === 'A' || lv === 'B' ? '　·　全部达标' : '　·　需要关注')
-            : '等级 —';
+          // 只比较真有分数的房间：null 会被 Number() 当成 0，直接把最低分显示成 0.0
+          var scored = keys.map(function (k) { return rooms[k]; })
+            .filter(function (r) { return r && r.score != null; })
+            .sort(function (a, b) { return a.score - b.score; });
+          var worst = scored[0];
+          if (worst) {
+            var lv = (worst.level || '').toUpperCase();
+            $('kMin').innerHTML = Number(worst.score).toFixed(1) + '<small>分</small>';
+            $('kMinSub').textContent = lv
+              ? '等级 ' + lv + (lv === 'A' || lv === 'B' ? '　·　全部达标' : '　·　需要关注')
+              : '等级 —';
+          } else {
+            $('kMin').textContent = '—';
+            $('kMinSub').textContent = '暂无评分';
+          }
         } else {
           $('kMin').textContent = '—';
           $('kMinSub').textContent = '无数据';
