@@ -36,37 +36,46 @@
     }
     keys.sort(function (a, b) {
       var order = { D: 0, C: 1, B: 2, A: 3 };
-      var la = order[(rooms[a].level || 'D')], lb = order[(rooms[b].level || 'D')];
+      var la = order[(rooms[a].level || 'D').toUpperCase()];
+      var lb = order[(rooms[b].level || 'D').toUpperCase()];
+      if (la === undefined) la = 9;
+      if (lb === undefined) lb = 9;
       if (la !== lb) return la - lb;
       return (rooms[a].score || 0) - (rooms[b].score || 0);
     });
     $('roomGrid').innerHTML = keys.map(function (k) {
       var r = rooms[k] || {};
-      var lv = (r.level || 'D').toUpperCase();
-      var cr = r.cr === undefined ? null : r.cr * 100;
-      var va = r.var === undefined ? null : r.var * 100;
+      var lv = (r.level || '').toUpperCase();
+      // 用 == null 同时挡住 undefined 和 null：null 被 Number() 算成 0，
+      // 会渲染出「0.0 分 / 0.0%」，比显示「—」更容易骗人。
+      var cr = r.cr == null ? null : r.cr * 100;
+      var va = r.var == null ? null : r.var * 100;
       return '<div class="card stat" style="flex:1 1 260px;max-width:340px;min-width:240px">'
         + '<div class="row"><span style="font-weight:600;font-size:14.5px">' + k + '</span>'
-        + '<span class="badge ' + (LV[lv] || 'd') + '" style="margin-left:auto">' + lv + ' 级</span></div>'
-        + '<div class="val">' + (r.score === undefined ? '—' : Number(r.score).toFixed(1)) + '<small>分</small></div>'
+        + '<span class="badge ' + (LV[lv] || 'd') + '" style="margin-left:auto">' + (lv || '—') + ' 级</span></div>'
+        + '<div class="val">' + (r.score == null ? '—' : Number(r.score).toFixed(1)) + '<small>分</small></div>'
         + '<table class="tbl" style="margin-top:10px;font-size:12.6px"><tbody>'
         + '<tr><td style="color:#6B8199;padding-left:0">出镜率</td><td class="num" style="padding-right:0">' + (cr === null ? '—' : cr.toFixed(1) + '%') + '</td></tr>'
         + '<tr><td style="color:#6B8199;padding-left:0">语音活跃率</td><td class="num" style="padding-right:0">' + (va === null ? '—' : va.toFixed(1) + '%') + '</td></tr>'
-        + '<tr><td style="color:#6B8199;padding-left:0">异常事件</td><td class="num" style="padding-right:0">' + (r.events === undefined ? '—' : r.events) + ' 条</td></tr>'
-        + '<tr><td style="color:#6B8199;padding-left:0">监看时长</td><td class="num" style="padding-right:0">' + (r.video_sec === undefined ? '—' : Math.round(r.video_sec) + ' 秒') + '</td></tr>'
+        + '<tr><td style="color:#6B8199;padding-left:0">异常事件</td><td class="num" style="padding-right:0">' + (r.events == null ? '—' : r.events) + ' 条</td></tr>'
+        + '<tr><td style="color:#6B8199;padding-left:0">监看时长</td><td class="num" style="padding-right:0">' + (r.video_sec == null ? '—' : Math.round(r.video_sec) + ' 秒') + '</td></tr>'
         + '</tbody></table></div>';
     }).join('');
   }
 
   function renderSource(d) {
+    // 快照模式下简报的心跳/窗口都不适用，硬塞进来会显示成「0 秒前 + 8 天前的数据时间」
+    var live = d.source === 'snapshot';
     var rows = [
-      ['数据目录', '<span class="small">' + (d.periodic_dir || '—') + '</span>'],
+      ['数据来源', live ? '实时快照（15 秒一刷）' : '半小时简报'],
       ['最新数据时间', (d.generated_at || '无') + '（' + ago(d.age_seconds) + '）'],
-      ['统计窗口', (d.window_minutes || '—') + ' 分钟'],
-      ['心跳文件', d.heartbeat ? '有（' + (d.heartbeat.ts || d.heartbeat.time || '已写入') + '）' : '未找到'],
-      ['简报期数', (d.reports || []).length + ' 期'],
-      ['服务端时间', d.server_time || '—']
+      ['统计窗口', live ? '本场累计' : ((d.window_minutes || '—') + ' 分钟')]
     ];
+    if (!live) {
+      rows.push(['心跳文件', d.heartbeat ? '有（' + (d.heartbeat.ts || d.heartbeat.time || '已写入') + '）' : '未找到']);
+    }
+    rows.push(['简报期数', (d.reports || []).length + ' 期' + (live ? '（历史简报）' : '')]);
+    rows.push(['服务端时间', d.server_time || '—']);
     $('sourceTable').innerHTML = rows.map(function (r) {
       return '<tr><td style="width:38%;color:#6B8199">' + r[0] + '</td><td>' + r[1] + '</td></tr>';
     }).join('');
