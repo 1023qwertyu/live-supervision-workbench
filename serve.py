@@ -21,6 +21,8 @@ from urllib.parse import parse_qs, urlparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIVE_DIR = os.environ.get("LIVEVISION_DIR", r"D:/LiveVision")
 PERIODIC = os.path.join(LIVE_DIR, "output", "periodic")
+SNAP_DIR = os.path.join(LIVE_DIR, "output", "live")
+SNAP_FRESH_SEC = 300          # 实时快照超过这么久没刷新，就当这一路已经停了
 REPORT_RE = re.compile(r"^report_[\w\-]+\.md$")
 
 
@@ -30,6 +32,48 @@ def read_json(path, default=None):
             return json.load(f)
     except Exception:
         return default
+
+
+def snapshot_rooms():
+    """读 daemon 每 15 秒写的实时快照（output/live/*.json）
+
+    为什么先读这里：每半小时一份的简报（periodic/latest.json）只有汇报器在跑时才更新，
+    汇报器一停，首页就一直显示「数据已过期」，而真正在采的房间其实好好的。
+    输出的字段与简报对齐，前端不用改。
+    返回 (rooms, 最新一份快照距今秒数)。
+    """
+    rooms, newest = {}, None
+    if not os.path.isdir(SNAP_DIR):
+        return rooms, newest
+    now = time.time()
+    for name in os.listdir(SNAP_DIR):
+        if not name.endswith(".json"):
+            continue
+        d = read_json(os.path.join(SNAP_DIR, name))
+        if not isinstance(d, dict) or not d.get("running"):
+            continue
+        try:
+            age = now - time.mktime(time.strptime(d.get("updated_at"), "%Y-%m-%dT%H:%M:%S"))
+        except Exception:
+            continue
+        if age > SNAP_FRESH_SEC:
+            continue                     # 快照很久没刷 = 这一路已停，不能当实时
+        m = d.get("metrics") or {}
+        s = d.get("score") or {}
+        a = d.get("audio") or {}
+        rooms[d.get("room") or name[:-5]] = {
+            "score": s.get("score"),
+            "level": s.get("level"),
+            "cr": m.get("cr"),
+            "var": m.get("var"),
+            "max_silence_sec": a.get("max_silence_sec"),
+            "silence_segments": a.get("silence_segments"),
+            "speech_segments": a.get("speech_segments"),
+            "events": d.get("events"),
+            "video_sec": d.get("video_sec"),
+        }
+        newest = age if newest is None else min(newest, age)
+    return rooms, newest
 
 
 def live_payload():
@@ -64,16 +108,24 @@ def live_payload():
         except Exception:
             age = None
 
+    # 实时快照优先：确实有人在采就以它为准（15 秒一刷），简报只在没人在采时兜底
+    snap, snap_age = snapshot_rooms()
+    if snap:
+        rooms, age, source = snap, int(snap_age or 0), "snapshot"
+    else:
+        rooms, source = (latest or {}).get("rooms", {}), "periodic"
+
     return {
-        "ok": bool(latest),
+        "ok": bool(latest) or bool(snap),
         "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),
         "periodic_dir": PERIODIC,
         "exists": os.path.isdir(PERIODIC),
         "generated_at": (latest or {}).get("generated_at"),
         "window_minutes": (latest or {}).get("window_minutes"),
-        "rooms": (latest or {}).get("rooms", {}),
+        "rooms": rooms,
+        "source": source,
         "age_seconds": age,
-        "stale": (age is None or age > 40 * 60) if latest else True,
+        "stale": (age is None or age > 40 * 60),
         "heartbeat": beat,
         "reports": reports[:20],
         "latest_report": md_text,
