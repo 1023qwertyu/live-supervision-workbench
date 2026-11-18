@@ -48,7 +48,7 @@ flowchart LR
 3. **异常**：命中后 `SpanRecorder` 按切片 mtime 分段落盘，结束用 `concat_files()` 无损合成一个 mp4。
 4. **入库**：`evidence.record()` 把片段移到证据目录，写 `event.json`、`SHA256SUMS.txt`，同时写 SQLite 和 JSONL 索引。
 5. **快照**：正常/异常都会每 15 秒写 `output/live/<房间>.json`（分数、等级、出镜率、语音活跃率、事件数）。
-6. **查询**：8771 读 SQLite/文件；8787 读 `output/periodic/latest.json`。
+6. **查询**：8771 读 SQLite/文件；8787 **优先**读 `output/live/<房间>.json` 实时快照（15 秒一刷，只收 `running=true` 且 60 秒内刷新过的），没有在采房间时才回落到 `output/periodic/latest.json`（每半小时一份的简报）。
 
 ## 5. 数据模型
 
@@ -104,7 +104,7 @@ output/evidence/
 
 | 路由 | 说明 |
 |---|---|
-| `GET /api/live` | 聚合 `latest.json`、心跳、简报列表、过期判断 |
+| `GET /api/live` | 优先聚合 `output/live` 实时快照（`source: "snapshot"`，此时 `heartbeat`/`window_minutes` 为 null）；无在采房间时回落简报（`source: "periodic"`）。两种模式都返回过期判断与简报列表 |
 | `GET /api/report?name=` | 指定简报原文（文件名白名单校验） |
 
 ## 7. 运行方式

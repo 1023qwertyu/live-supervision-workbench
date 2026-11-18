@@ -60,12 +60,19 @@ def snapshot_rooms():
             continue
         if age > SNAP_FRESH_SEC:
             continue                     # 快照很久没刷 = 这一路已停，不能当实时
+        if age < -5:
+            continue                     # 时间戳比现在还超前 = 写端时钟不对，不能当实时
+        age = max(0.0, age)              # 几秒的时钟抖动夹到 0，别显示「-2 秒前」
         # 只认 dict：真值但不是 dict（比如被写成字符串）会让 .get 抛 AttributeError，
         # 整页直接断连、前端显示「未启动服务」，比少一间严重得多。
         m = d.get("metrics") if isinstance(d.get("metrics"), dict) else {}
         s = d.get("score") if isinstance(d.get("score"), dict) else {}
         a = d.get("audio") if isinstance(d.get("audio"), dict) else {}
-        rooms[d.get("room") or name[:-5]] = {
+        # 房间名要当字典键：list/dict 不可哈希会抛 TypeError，同样能打挂整个接口
+        key = d.get("room")
+        if not isinstance(key, str) or not key:
+            key = name[:-5]
+        rooms[key] = {
             "score": s.get("score"),
             "level": s.get("level"),
             "cr": m.get("cr"),
