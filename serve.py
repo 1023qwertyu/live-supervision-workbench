@@ -13,6 +13,8 @@ import argparse
 import json
 import os
 import re
+import socket
+import subprocess
 import time
 import webbrowser
 from datetime import datetime, timedelta
@@ -25,6 +27,9 @@ PERIODIC = os.path.join(LIVE_DIR, "output", "periodic")
 SNAP_DIR = os.path.join(LIVE_DIR, "output", "live")
 SNAP_FRESH_SEC = 180          # 超过这么久没刷新就当这一路已经停了（要能覆盖断流重连）
 SNAP_LAG_SEC = 60             # 超过这个还没刷新 = 可能在断流重连，页面上要标出来
+TREND_PATH = os.path.join(HERE, "data", "trend.json")
+TREND_KEEP = 240              # 每房间最多留 240 个点
+TREND_STEP = 60               # 同一房间 60 秒最多记一个点（页面 30 秒轮询，不能每次都记）
 REPORT_RE = re.compile(r"^report_[\w\-]+\.md$")
 
 
@@ -34,6 +39,47 @@ def read_json(path, default=None):
             return json.load(f)
     except Exception:
         return default
+
+
+def _is_private(ip):
+    if ip.startswith("10.") or ip.startswith("192.168."):
+        return True
+    if ip.startswith("172."):
+        try:
+            return 16 <= int(ip.split(".")[1]) <= 31
+        except Exception:
+            return False
+    return False
+
+
+def lan_ip():
+    """本机私网 IP：证据台（8771）只绑 LAN，127.0.0.1 连不上，得用这个拼地址
+
+    两条路：先问 UDP 出口（快），被代理软件的 TUN 网卡劫持时它给的是 198.18.x，
+    不是私网段会被挡掉；再读 ipconfig 拿真实 WLAN 地址（这台机器实际就是这种情况）。
+    两条都不行宁可返回 None，也不给一个打不开的地址。
+    """
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0.3)
+        s.connect(("223.5.5.5", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        if _is_private(ip):
+            return ip
+    except Exception:
+        pass
+    try:
+        # latin-1 不破坏 ASCII：ipconfig 输出是 GBK，直接解会乱，但 IP 地址本身是 ASCII
+        out = subprocess.run(["ipconfig"], capture_output=True, timeout=5).stdout
+        out = out.decode("latin-1", errors="replace")
+        for m in re.finditer(r"IPv4[^\d]{0,60}(\d{1,3}(?:\.\d{1,3}){3})", out):
+            ip = m.group(1)
+            if _is_private(ip):
+                return ip
+    except Exception:
+        pass
+    return None
 
 
 def snapshot_rooms():
@@ -93,6 +139,19 @@ def snapshot_rooms():
             "speech_segments": a.get("speech_segments"),
             "events": d.get("events"),
             "video_sec": d.get("video_sec"),
+            # 详情面板要用的明细：没这些只能显示一个分数，看不出扣在哪
+            "away_sec": m.get("away_sec"),
+            "phone_count": m.get("phone_count"),
+            "prone_count": m.get("prone_count"),
+            "silence_min": m.get("silence_min"),
+            "eating_count": m.get("eating_count"),
+            "proxy": m.get("proxy"),
+            "items": s.get("items") if isinstance(s.get("items"), list) else [],
+            "advice": s.get("advice"),
+            "level_reasons": s.get("level_reasons") if isinstance(s.get("level_reasons"), list) else [],
+            "alerts": (d.get("alerts") if isinstance(d.get("alerts"), list) else [])[-6:],
+            "link_drops": ((d.get("health") or {}).get("link_drops")
+                           if isinstance(d.get("health"), dict) else None),
             # 每间房各自的时间：数据是什么时候的、本场几点开始
             "updated_at": upd,
             "started_at": started,
@@ -103,6 +162,47 @@ def snapshot_rooms():
         if newest is None or age < newest:
             newest, newest_ts = age, d.get("updated_at")
     return rooms, newest, newest_ts
+
+
+def trend_add(rooms):
+    """给每间房记一个时间点，供详情面板画趋势
+
+    为什么放在工作台侧：LiveVision 的 output/live/*.json 只保留「最新一份」，
+    覆盖写、不留历史。要画趋势只能自己攒——这里每 60 秒最多记一个点，
+    最多留 240 个（约 4 小时）。只读快照，不碰监看链路。
+    返回 {房间: [[ts, score, cr, var], ...]}。
+    """
+    data = read_json(TREND_PATH)
+    if not isinstance(data, dict):
+        data = {}
+    now = int(time.time())
+    changed = False
+    for name, r in rooms.items():
+        pts = data.get(name) if isinstance(data.get(name), list) else []
+        if pts and now - int(pts[-1][0] or 0) < TREND_STEP:
+            continue
+        pts.append([now, r.get("score"), r.get("cr"), r.get("var")])
+        data[name] = pts[-TREND_KEEP:]
+        changed = True
+    # 回收：房间已经不在采、且最后一点超过 3 天的，整条删掉；
+    # 否则改过名/临时测试过的房间会永久留在文件里，每 60 秒跟着重写一遍。
+    for k in list(data):
+        if k in rooms:
+            continue
+        pts = data.get(k)
+        if not isinstance(pts, list) or not pts or (now - int(pts[-1][0] or 0)) > 3 * 86400:
+            del data[k]
+            changed = True
+    if changed:
+        try:
+            os.makedirs(os.path.dirname(TREND_PATH), exist_ok=True)
+            tmp = TREND_PATH + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False)
+            os.replace(tmp, TREND_PATH)
+        except Exception:
+            pass
+    return data
 
 
 def live_payload():
@@ -141,12 +241,17 @@ def live_payload():
     snap, snap_age, snap_ts = snapshot_rooms()
     if snap:
         rooms, age, source = snap, int(snap_age or 0), "snapshot"
+        # 详情面板要画趋势：顺手记一个点，并把最近 60 个点带给前端
+        tr = trend_add(snap)
+        for _name, _r in rooms.items():
+            _r["trend"] = (tr.get(_name) or [])[-60:]
     else:
         rooms, source = (latest or {}).get("rooms", {}), "periodic"
 
     # 快照模式下，简报的 generated_at / 心跳 / 窗口都是上一套链路的产物，
     # 原样返回会渲染出「0 秒前」配「8 天前的数据时间」这种自相矛盾的一屏。
     live_mode = source == "snapshot"
+    _ip = lan_ip()
     return {
         "ok": bool(latest) or bool(snap),
         "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -159,6 +264,7 @@ def live_payload():
         "age_seconds": age,
         "stale": (age is None or age > 40 * 60),
         "heartbeat": None if live_mode else beat,
+        "evidence_url": ("http://%s:8771" % _ip) if _ip else None,
         "reports": reports[:20],
         "latest_report": md_text,
     }
