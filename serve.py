@@ -15,6 +15,7 @@ import os
 import re
 import time
 import webbrowser
+from datetime import datetime, timedelta
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -73,6 +74,15 @@ def snapshot_rooms():
         key = d.get("room")
         if not isinstance(key, str) or not key:
             key = name[:-5]
+        # 本场开始时间 = 数据时间往回推「已监看时长」，让页面能显示「本场几点起」
+        upd = d.get("updated_at")
+        started = None
+        try:
+            started = (datetime.strptime(upd, "%Y-%m-%dT%H:%M:%S")
+                       - timedelta(seconds=float(d.get("video_sec") or 0))
+                       ).strftime("%Y-%m-%dT%H:%M:%S")
+        except Exception:
+            started = None
         rooms[key] = {
             "score": s.get("score"),
             "level": s.get("level"),
@@ -83,6 +93,9 @@ def snapshot_rooms():
             "speech_segments": a.get("speech_segments"),
             "events": d.get("events"),
             "video_sec": d.get("video_sec"),
+            # 每间房各自的时间：数据是什么时候的、本场几点开始
+            "updated_at": upd,
+            "started_at": started,
             # 这间房自己多久没刷新：断流重连期间 monitor 不写快照，页面要能看出来
             "age_sec": round(age, 1),
             "lagging": age > SNAP_LAG_SEC,
